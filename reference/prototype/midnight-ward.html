@@ -1,0 +1,1454 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>Midnight Ward</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a dark ward on the left, the open spec book on the right; stacks on phones. Single committed look: ink and candlelight. */
+:root {
+  --ink: #0d0b0a;
+  --ink-2: #171310;
+  --ink-3: #231c17;
+  --parch: #e8d9b5;
+  --parch-dim: #b7a782;
+  --parch-ink: #2a2118;
+  --amber: #f2a541;
+  --ghost: #7fd1c7;
+  --blood: #b3261b;
+  --mold: #7d8f5a;
+  --gold: #e8b85a;
+  --font-rule: "IM Fell English", "Iowan Old Style", "Palatino Linotype", Palatino, "Songti TC", "PMingLiU", Georgia, serif;
+  --font-ui: "IM Fell English", "Iowan Old Style", Palatino, "Songti TC", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: auto; }
+body {
+  background: var(--ink);
+  color: var(--parch);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 40px;
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 14px; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
+h1 { font-family: var(--font-rule); font-weight: 400; font-size: clamp(28px, 5vw, 40px); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+h1 small { font-size: .45em; color: var(--parch-dim); font-style: italic; margin-left: .4em; }
+.nights { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.nights button, .btn, .tool {
+  font: inherit; color: var(--parch); background: var(--ink-2); border: 1px solid #3a3027;
+  border-radius: 3px; padding: 6px 12px; cursor: pointer; min-height: 36px;
+}
+.nights button[aria-current="true"] { border-color: var(--amber); color: var(--amber); }
+.nights button .done { color: var(--gold); margin-left: 4px; }
+button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.btn:disabled, .tool:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--amber); color: var(--ink); border-color: var(--amber); font-weight: 600; }
+.icon-btn { min-width: 36px; padding: 6px 10px; }
+
+.coach { border: 1px solid var(--amber); background: #1a130c; border-radius: 4px; padding: 10px 12px; display: grid; gap: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+.coach[hidden] { display: none; }
+.coach .row { display: flex; align-items: baseline; gap: 10px; }
+.coach .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+.coach .skip { margin-left: auto; font-family: var(--font-mono); font-size: 11px; background: none; border: 0; color: var(--parch-dim); cursor: pointer; text-decoration: underline; padding: 4px; min-height: 0; }
+.coach .en { font-size: 17px; line-height: 1.35; }
+.coach .zh { font-size: 14px; color: var(--parch-dim); }
+.coach.done { border-color: var(--gold); } .coach.done .tag { color: var(--gold); }
+.pulse { outline: 2px solid var(--amber) !important; outline-offset: 3px; animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 50% { outline-color: rgba(242,165,65,.15); } }
+@media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+@media (max-width: 860px) {
+  .coach { position: fixed; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: max(8px, env(safe-area-inset-bottom, 0px)); z-index: 30; }
+  body.coached { padding-bottom: 180px; }
+}
+.lesson { display: grid; gap: 2px; border-left: 2px solid var(--amber); padding: 4px 0 4px 12px; }
+.lesson .en { font-size: 17px; }
+.lesson .zh { color: var(--parch-dim); font-size: 14px; }
+.lesson .concept { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+
+.stage { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) {
+  .stage { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .room-col { display: contents; }
+  .room-col .clock { order: 1; } .room-col .canvas-box { order: 2; } .book { order: 3; }
+  .room-col .tray { order: 4; } .room-col .controls { order: 5; } .room-col .verdict { order: 6; }
+  .line { font-size: 15px; }
+}
+
+.room-col { display: grid; gap: 10px; min-width: 0; }
+.clock { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; color: var(--parch-dim); }
+.clock .pips { display: flex; gap: 4px; }
+.clock .pip { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #5a4a38; }
+.clock .pip.on { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.clock .label { margin-left: auto; }
+.canvas-box { position: relative; width: 100%; border: 1px solid #2c241d; background: #050403; }
+canvas#room { display: block; width: 100%; height: auto; touch-action: manipulation; cursor: pointer; }
+
+.tray { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.tool { display: flex; align-items: center; gap: 8px; }
+.tool[aria-pressed="true"] { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber) inset; }
+.tool .count { font-family: var(--font-mono); font-size: 12px; color: var(--parch-dim); }
+.tool svg { width: 18px; height: 18px; }
+.card {
+  font-family: var(--font-rule); text-align: left; background: var(--parch); color: var(--parch-ink);
+  border: 1px solid #8f7d58; border-radius: 2px; padding: 8px 10px; font-size: 14px; line-height: 1.3;
+  max-width: 320px; cursor: pointer; position: relative;
+  box-shadow: 0 2px 0 #6b5a3e;
+}
+.card .tag { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #7a5a2a; margin-bottom: 2px; }
+.card[aria-pressed="true"] { outline: 2px solid var(--amber); outline-offset: 2px; }
+.card.used { opacity: .35; cursor: default; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.verdict { min-height: 0; font-size: 16px; line-height: 1.5; display: grid; gap: 6px; }
+.verdict p { margin: 0; }
+.verdict .head { font-size: 22px; }
+.verdict.lost .head { color: #e0675c; }
+.verdict.won .head { color: var(--gold); }
+.verdict .stat { font-family: var(--font-mono); font-size: 13px; color: var(--parch-dim); }
+
+/* Spec book */
+.book { display: grid; gap: 14px; min-width: 0; }
+.spec {
+  position: relative; background: var(--parch); color: var(--parch-ink); padding: 14px 16px 12px 16px;
+  border-radius: 2px; box-shadow: 0 1px 0 #6b5a3e, 0 8px 24px rgba(0,0,0,.45);
+  background-image: radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.18), transparent 60%), radial-gradient(90% 70% at 100% 100%, rgba(120,80,30,.22), transparent 70%);
+  --curl: 0;
+}
+.spec::after { /* the corner that curls as danger comes close */
+  content: ""; position: absolute; right: 0; bottom: 0; width: calc(4px + var(--curl) * 34px); height: calc(4px + var(--curl) * 34px);
+  background: linear-gradient(135deg, var(--parch-dim) 0 48%, #4a3a28 50%, var(--ink) 52%);
+  transition: width .5s, height .5s;
+}
+.spec h3 { margin: 0 0 6px; font-family: var(--font-mono); font-weight: 500; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #6d5636; display: flex; gap: 8px; align-items: baseline; }
+.spec h3 .who { font-family: var(--font-rule); font-size: 20px; letter-spacing: 0; text-transform: none; color: var(--parch-ink); }
+.spec ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.line { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 6px; align-items: start; padding: 4px 4px; border-radius: 2px; font-family: var(--font-rule); font-size: 16px; line-height: 1.32; transition: background .3s, color .3s, opacity .4s; position: relative; }
+.line .ln { font-family: var(--font-mono); font-size: 11px; color: #8a7350; padding-top: 3px; text-align: right; }
+.line .mark { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; min-width: 14px; text-align: center; }
+.line.card-line { background: rgba(242,165,65,.18); box-shadow: inset 2px 0 0 #b07020; }
+.line.rewrite { background: rgba(179,38,27,.10); box-shadow: inset 2px 0 0 var(--blood); }
+.line .rm { border: 0; background: none; color: #7a4a2a; cursor: pointer; font: inherit; font-size: 14px; padding: 0 4px; }
+.line.lit { background: rgba(40,30,20,.88); color: var(--amber); }
+.line.lit .ln, .line.lit .mark { color: var(--amber); }
+.line.false { opacity: .55; }
+.line.false .txt { text-decoration: line-through; text-decoration-color: rgba(42,33,24,.35); }
+.line.shadowed { color: #4f5a36; background: rgba(125,143,90,.2); }
+.line.shadowed .txt { filter: blur(.2px); }
+.line.idle { opacity: .5; }
+.line.gold { color: #7a5408; background: rgba(232,184,90,.35); }
+.line.burn { animation: burn 1.6s ease-in forwards; }
+@keyframes burn { 0% { color: var(--parch-ink); } 30% { color: #c2410c; text-shadow: 0 0 6px #f97316; } 100% { color: transparent; text-shadow: none; opacity: .15; } }
+.line.bleed .txt { animation: bleed 1.4s ease-out; display: inline-block; }
+@keyframes bleed { 0% { transform: scaleX(-1); filter: blur(3px); opacity: 0; color: var(--blood); } 55% { transform: scaleX(-1); filter: blur(1px); opacity: .8; } 100% { transform: scaleX(1); filter: none; opacity: 1; } }
+.line.struck .txt { position: relative; }
+.line.struck .txt::after { content: ""; position: absolute; left: -2px; right: -2px; top: 52%; height: 2px; background: var(--blood); transform-origin: left; animation: strike .8s ease-out forwards; }
+@keyframes strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.slot { display: block; width: 100%; border: 1px dashed #a0703a; background: rgba(242,165,65,.12); color: #7a4a10; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px; cursor: pointer; border-radius: 2px; }
+.slot:hover { background: rgba(242,165,65,.3); }
+.spec .foot { margin-top: 8px; font-family: var(--font-rule); font-style: italic; font-size: 14px; color: #8b2a1f; border-top: 1px solid rgba(42,33,24,.2); padding-top: 6px; }
+.spec .nearnote { font-family: var(--font-mono); font-size: 10.5px; color: #7d6544; margin-top: 6px; }
+
+details.kit { border-top: 1px solid #2c241d; padding-top: 10px; }
+details.kit summary { cursor: pointer; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--parch-dim); }
+pre.term { background: #050403; border: 1px solid #2c241d; color: #b9e3c9; font-family: var(--font-mono); font-size: 12.5px; padding: 10px 12px; overflow-x: auto; margin: 8px 0 0; white-space: pre; }
+.kit p { color: var(--parch-dim); font-size: 15px; max-width: 65ch; }
+canvas#fx { position: fixed; inset: 0; pointer-events: none; z-index: 20; width: 100vw; height: 100vh; }
+.vignette { position: fixed; inset: 0; pointer-events: none; z-index: 19; background: radial-gradient(ellipse at center, transparent 40%, rgba(120,10,5,.55)); opacity: 0; transition: opacity .6s; }
+.vignette.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .line, .spec::after { transition: none; } .line.burn, .line.bleed .txt, .line.struck .txt::after { animation-duration: .01s; } }
+</style>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="vignette" id="vignette"></div>
+<div class="wrap">
+  <header class="top">
+    <h1>Midnight Ward <small>a Haunt Kit night</small></h1>
+    <nav class="nights" id="nights" aria-label="Nights"></nav>
+    <button class="btn icon-btn" id="view" title="Switch view">2.5D</button>
+    <button class="btn icon-btn" id="tut" aria-pressed="true">Tutorial on</button>
+    <button class="btn icon-btn" id="sound" aria-pressed="false" title="Sound">Sound off</button>
+  </header>
+
+  <div class="lesson" id="lesson"></div>
+  <div class="coach" id="coach" aria-live="polite" hidden></div>
+
+  <div class="stage">
+    <section class="room-col" aria-label="The ward">
+      <div class="clock"><span>BELL</span><div class="pips" id="pips"></div><span class="label" id="clocklabel">Planning</span></div>
+      <div class="canvas-box"><canvas id="room" width="900" height="700" aria-label="Room map. Tap a tile to place the selected item."></canvas></div>
+      <div class="tray" id="tray" aria-label="Items and spell cards"></div>
+      <div class="controls">
+        <button class="btn" id="step">Step one bell</button>
+        <button class="btn primary" id="play">Ring midnight</button>
+        <button class="btn" id="fast" aria-pressed="false">Speed ×1</button>
+        <button class="btn" id="reset">Back to planning</button>
+        <button class="btn" id="clear">Clear board</button>
+      </div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+    </section>
+    <section class="book" id="book" aria-label="Spec book"></section>
+  </div>
+
+  <details class="kit" id="kit">
+    <summary>Haunt Kit: verify every night</summary>
+    <p>The game, the solver and this check all run the same rule engine. In the full build, a Kiro hook runs this every time a ghost spec or a level is saved, so a spec edit that makes a night unsolvable is caught before anyone plays it.</p>
+    <button class="btn" id="verify">Run verify</button>
+    <pre class="term" id="term">$ npm run verify</pre>
+  </details>
+</div>
+
+<script>
+// Haunt Kit prototype engine — pure, deterministic. Shared by the game and the solver.
+(function (root) {
+  const NEAR = { girl_near: 3, bell_near: 2, candle_near: 2, dark: 2, salt_adjacent: 1, ghost_near: 2 };
+  const TICKS = 12;
+
+  const COND_TEXT = {
+    always: () => '',
+    girl_near: () => 'the girl is near',
+    bell_near: () => 'the bell is near',
+    candle_near: () => 'a lit candle is near',
+    dark: () => 'it is dark',
+    salt_adjacent: () => 'salt is adjacent',
+    ghost_near: () => 'a ghost is near',
+    tick_is: (n) => `the clock strikes ${n}`,
+    tick_after: (n) => `the clock has struck ${n}`,
+  };
+  const ACT_TEXT = {
+    toward_girl: 'move toward the girl',
+    away_girl: 'move away from the girl',
+    stay: 'stay still',
+    toward_candle: 'move toward the candle',
+    away_candle: 'move away from the candle',
+    snuff: 'snuff the candle',
+    toward_window: 'walk toward the window',
+    toward_bed: 'walk back to bed',
+  };
+  const ACTOR_NAME = { girl: 'girl', wisp: 'wisp', shade: 'shade', snuffer: 'snuffer' };
+
+  function ruleText(rule, kind) {
+    const who = 'THE ' + ACTOR_NAME[kind];
+    const act = 'SHALL ' + ACT_TEXT[rule.act];
+    if (rule.cond === 'always') return `${who} ${act}.`;
+    const c = COND_TEXT[rule.cond](rule.n);
+    if (rule.kw === 'IF') return `IF ${c}, THEN ${who} ${act}.`;
+    return `WHEN ${c}, ${who} ${act}.`;
+  }
+
+  function parseMap(rows) {
+    const h = rows.length, w = rows[0].length;
+    const walls = [], free = [];
+    const out = { w, h, walls: new Set(), bed: null, window: null, starts: [], fixed: [] };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const ch = rows[y][x];
+      if (ch === '#') out.walls.add(y * w + x);
+      else if (ch === 'B') out.bed = { x, y };
+      else if (ch === 'W') out.window = { x, y };
+      else if (ch === 'w' || ch === 's' || ch === 'n') out.starts.push({ x, y, kind: { w: 'wisp', s: 'shade', n: 'snuffer' }[ch] });
+      else if (ch === 'c') out.fixed.push({ type: 'candle', x, y, lit: true, fixed: true });
+      else if (ch === '.') free.push({ x, y });
+    }
+    out.free = free;
+    return out;
+  }
+
+  const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+
+  // level: { map, girl: [rules], ghosts: [[rules]...], events: [{tick, actor, at, rule}] }
+  // placement: [{type,x,y}], inserts: [{card, actor, at}]
+  function init(level, placement, inserts) {
+    const m = level._map || (level._map = parseMap(level.map));
+    const actors = [];
+    actors.push({ id: 'girl', kind: 'girl', x: m.bed.x, y: m.bed.y, rules: level.girl.map((r) => ({ ...r, src: 'base' })) });
+    m.starts.forEach((s, i) => {
+      actors.push({ id: 'g' + i, kind: s.kind, x: s.x, y: s.y, rules: (level.ghosts[i] || []).map((r) => ({ ...r, src: 'base' })) });
+    });
+    // Apply player inserts in a stable order: higher `at` first per actor would shift; we insert in given order.
+    for (const ins of inserts || []) {
+      const a = actors.find((q) => q.id === ins.actor);
+      if (!a) continue;
+      a.rules.splice(Math.min(ins.at, a.rules.length), 0, { ...ins.card, src: 'card', cardId: ins.cardId });
+    }
+    const items = m.fixed.map((f) => ({ ...f })).concat((placement || []).map((p) => ({ ...p, lit: p.type === 'candle' })));
+    return { tick: 0, actors, items, map: m, level, status: 'night', history: [] };
+  }
+
+  function blocked(s, x, y) {
+    const m = s.map;
+    if (x < 0 || y < 0 || x >= m.w || y >= m.h) return true;
+    if (m.walls.has(y * m.w + x)) return true;
+    for (const it of s.items) if (it.type === 'salt' && it.x === x && it.y === y) return true;
+    return false;
+  }
+
+  function nearest(from, list) {
+    let best = null, bd = 1e9;
+    for (const t of list) { const d = dist(from, t); if (d < bd) { bd = d; best = t; } }
+    return best;
+  }
+
+  function step(s, a, target, away) {
+    if (!target) return false;
+    let dx = target.x - a.x, dy = target.y - a.y;
+    if (away) { dx = -dx; dy = -dy; }
+    if (dx === 0 && dy === 0) return false;
+    const hx = Math.sign(dx), vy = Math.sign(dy);
+    const order = Math.abs(dx) >= Math.abs(dy) ? [[hx, 0], [0, vy]] : [[0, vy], [hx, 0]];
+    for (const [ox, oy] of order) {
+      if (ox === 0 && oy === 0) continue;
+      if (!blocked(s, a.x + ox, a.y + oy)) { a.x += ox; a.y += oy; return true; }
+    }
+    return false;
+  }
+
+  function holds(s, a, rule) {
+    const girl = s.actors[0];
+    const lit = s.items.filter((i) => i.type === 'candle' && i.lit);
+    switch (rule.cond) {
+      case 'always': return true;
+      case 'girl_near': return dist(a, girl) <= NEAR.girl_near;
+      case 'bell_near': return s.items.some((i) => i.type === 'bell' && dist(a, i) <= NEAR.bell_near);
+      case 'candle_near': return lit.some((i) => dist(a, i) <= NEAR.candle_near);
+      case 'dark': return !lit.some((i) => dist(a, i) <= NEAR.dark);
+      case 'salt_adjacent': return s.items.some((i) => i.type === 'salt' && dist(a, i) <= NEAR.salt_adjacent);
+      case 'ghost_near': return s.actors.some((g) => g.kind !== 'girl' && dist(a, g) <= NEAR.ghost_near);
+      case 'tick_is': return s.tick === rule.n;
+      case 'tick_after': return s.tick >= rule.n;
+    }
+    return false;
+  }
+
+  function act(s, a, rule) {
+    const girl = s.actors[0];
+    const lit = s.items.filter((i) => i.type === 'candle' && i.lit);
+    switch (rule.act) {
+      case 'toward_girl': return step(s, a, girl, false);
+      case 'away_girl': return step(s, a, girl, true);
+      case 'stay': return false;
+      case 'toward_candle': return step(s, a, nearest(a, lit), false);
+      case 'away_candle': return step(s, a, nearest(a, lit), true);
+      case 'snuff': {
+        const c = nearest(a, lit.filter((i) => dist(a, i) <= NEAR.candle_near));
+        if (c) { c.lit = false; return true; }
+        return false;
+      }
+      case 'toward_window': return step(s, a, s.map.window, false);
+      case 'toward_bed': return step(s, a, s.map.bed, false);
+    }
+    return false;
+  }
+
+  // Advance one tick. Returns a trace for the UI.
+  function tick(s) {
+    if (s.status !== 'night') return null;
+    s.tick += 1;
+    const trace = { tick: s.tick, events: [], turns: [] };
+    for (const ev of s.level.events || []) {
+      if (ev.tick === s.tick) {
+        const a = s.actors.find((q) => q.id === ev.actor);
+        a.rules.splice(ev.at, 0, { ...ev.rule, src: 'rewrite' });
+        trace.events.push({ actor: a.id, at: ev.at });
+      }
+    }
+    const girl = s.actors[0];
+    for (const a of s.actors) {
+      const evals = [];
+      let fired = -1;
+      for (let i = 0; i < a.rules.length; i++) {
+        const ok = holds(s, a, a.rules[i]);
+        evals.push(ok);
+        if (ok) { fired = i; break; }
+      }
+      // conditions below the fired rule are also evaluated (for "shadowed" detection), but never executed
+      const shadowedTrue = [];
+      for (let i = fired + 1; fired >= 0 && i < a.rules.length; i++) if (holds(s, a, a.rules[i])) shadowedTrue.push(i);
+      const shadowRefs = shadowedTrue.map((i) => a.rules[i]);
+      const from = { x: a.x, y: a.y };
+      const rule = fired >= 0 ? a.rules[fired] : null;
+      if (rule) act(s, a, rule);
+      trace.turns.push({ actor: a.id, evals, fired, shadowedTrue, shadowRefs, firedBy: rule, from, to: { x: a.x, y: a.y }, rule });
+      // capture check
+      const caught = s.actors.find((g) => g.kind !== 'girl' && g.x === girl.x && g.y === girl.y);
+      if (caught) {
+        s.status = 'lost';
+        trace.caught = { by: caught.id, actorTurn: a.id, rule, line: fired };
+        break;
+      }
+    }
+    if (s.status === 'night' && s.tick >= TICKS) s.status = 'won';
+    s.history.push(trace);
+    return trace;
+  }
+
+  function run(level, placement, inserts) {
+    const s = init(level, placement, inserts);
+    while (s.status === 'night') tick(s);
+    return s;
+  }
+
+  // Which rules ever fired / were shadowed while true, over a finished run.
+  function ruleStats(s) {
+    // Keyed by rule object so lines inserted mid-night do not shift the counts.
+    const byRule = new Map();
+    for (const a of s.actors) for (const r of a.rules) byRule.set(r, { fired: 0, shadowedBy: null, everTrue: false });
+    for (const tr of s.history) for (const t of tr.turns) {
+      if (t.rule && byRule.has(t.rule)) { const st = byRule.get(t.rule); st.fired++; st.everTrue = true; }
+      for (const r of t.shadowRefs || []) { const st = byRule.get(r); if (st) { st.everTrue = true; if (st.shadowedBy == null) st.shadowedBy = t.rule; } }
+    }
+    const stats = {};
+    for (const a of s.actors) stats[a.id] = a.rules.map((r) => { const st = byRule.get(r); return { ...st, shadowedBy: st.shadowedBy ? a.rules.indexOf(st.shadowedBy) : null }; });
+    return stats;
+  }
+
+  // ---------- Solver ----------
+  function placementsFor(level) {
+    const m = level._map || (level._map = parseMap(level.map));
+    const tiles = m.free;
+    const kinds = [];
+    for (const [type, n] of Object.entries(level.items || {})) for (let i = 0; i < n; i++) kinds.push(type);
+    const out = [];
+    const used = new Set();
+    function rec(k, minIdxByType, acc) {
+      if (k === kinds.length) { out.push(acc.slice()); return; }
+      const type = kinds[k];
+      const start = (k > 0 && kinds[k - 1] === type) ? minIdxByType + 1 : 0;
+      for (let i = start; i < tiles.length; i++) {
+        if (used.has(i)) continue;
+        used.add(i); acc.push({ type, x: tiles[i].x, y: tiles[i].y });
+        rec(k + 1, i, acc);
+        acc.pop(); used.delete(i);
+      }
+    }
+    rec(0, -1, []);
+    return out;
+  }
+
+  function insertOptions(level) {
+    // Every card is placed in some actor's spec at some line, or left unused.
+    const m = level._map || (level._map = parseMap(level.map));
+    const actorIds = [{ id: 'girl', len: level.girl.length }].concat(m.starts.map((s, i) => ({ id: 'g' + i, len: (level.ghosts[i] || []).length })));
+    const cards = level.cards || [];
+    let combos = [[]];
+    cards.forEach((card, ci) => {
+      const next = [];
+      for (const c of combos) {
+        next.push(c.slice()); // unused
+        for (const a of actorIds) {
+          const extra = c.filter((q) => q.actor === a.id).length;
+          for (let at = 0; at <= a.len + extra; at++) next.push(c.concat([{ card, cardId: ci, actor: a.id, at }]));
+        }
+      }
+      combos = next;
+    });
+    return combos;
+  }
+
+  function solve(level) {
+    const P = placementsFor(level), I = insertOptions(level);
+    let wins = 0, total = 0, minItems = Infinity;
+    for (const p of P) for (const ins of I) {
+      total++;
+      if (run(level, p, ins).status === 'won') { wins++; }
+    }
+    const empty = run(level, [], []).status;
+    return { wins, total, emptyLoses: empty === 'lost' };
+  }
+
+  root.HK = { TICKS, NEAR, parseMap, ruleText, init, tick, run, ruleStats, solve, placementsFor, insertOptions, dist, ACT_TEXT, COND_TEXT };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+// Haunt Kit prototype levels. Map legend: # wall · . floor · B bed (girl) · W window · w wisp · s shade · n snuffer · c fixed candle
+(function (root) {
+  const R = (kw, cond, act, n) => ({ kw, cond, act, n });
+  root.HK_LEVELS = [
+    {
+      id: 'tutorial', name: 'Prologue', concept: 'Condition and action',
+      lesson: 'Salt blocks a ghost. Read the wisp’s spec, then put salt where it must pass.',
+      lessonZh: '鹽會擋住鬼。先讀遊魂的規格書，再把鹽放在它一定會經過的地方。',
+      map: [
+        '#########',
+        '#B..#...#',
+        '#...#...#',
+        '#.......#',
+        '#...#...#',
+        '#...#..w#',
+        '#########',
+      ],
+      girl: [R('', 'always', 'stay')],
+      ghosts: [[R('', 'always', 'toward_girl')]],
+      items: { salt: 1 }, cards: [],
+    },
+    {
+      id: 'night1', name: 'Night I', concept: 'Rule order',
+      lesson: 'Only the first true line runs. A card placed under an always-true line can never fire.',
+      lessonZh: '只會執行第一條成立的規則。卡片放在「永遠成立」的那行下面，就永遠輪不到它。',
+      map: [
+        '#########',
+        '#w......#',
+        '#.......#',
+        '#.......#',
+        '#...B...#',
+        '#.......#',
+        '#......w#',
+        '#########',
+      ],
+      girl: [R('', 'always', 'stay')],
+      ghosts: [[R('', 'always', 'toward_girl')], [R('', 'always', 'toward_girl')]],
+      items: { bell: 1 },
+      cards: [R('IF', 'bell_near', 'stay'), R('IF', 'bell_near', 'stay')],
+    },
+    {
+      id: 'night2', name: 'Night II', concept: 'Boundaries',
+      lesson: '“Near” means 3 steps or fewer. The girl sleepwalks after the third bell. Keep her out of the shade’s reach.',
+      lessonZh: '「附近」是 3 步以內。女孩在第 3 響之後會夢遊。別讓她走進影子的範圍。',
+      map: [
+        '#########',
+        '#.......#',
+        '#.B.....#',
+        '#.......#',
+        '#....s..#',
+        '#.......#',
+        '#......W#',
+        '#########',
+      ],
+      girl: [R('WHEN', 'tick_after', 'toward_window', 3)],
+      ghosts: [[R('WHEN', 'girl_near', 'toward_girl'), R('', 'always', 'stay')]],
+      items: { salt: 2 }, cards: [],
+    },
+    {
+      id: 'night3', name: 'Night III', concept: 'Side effects',
+      lesson: 'The wisp freezes near light. The snuffer puts lights out. One ghost changes the other’s conditions.',
+      lessonZh: '遊魂靠近燭光會僵住，熄燭者會把燭熄掉。一隻鬼會改變另一隻鬼的條件。',
+      map: [
+        '#########',
+        '#n......#',
+        '#.....w.#',
+        '#.......#',
+        '#.......#',
+        '#.......#',
+        '#...B...#',
+        '#########',
+      ],
+      girl: [R('', 'always', 'stay')],
+      ghosts: [
+        [R('WHEN', 'candle_near', 'snuff'), R('WHEN', 'girl_near', 'toward_girl'), R('', 'always', 'toward_candle')],
+        [R('IF', 'candle_near', 'stay'), R('', 'always', 'toward_girl')],
+      ],
+      items: { candle: 1, salt: 1 }, cards: [],
+    },
+    {
+      id: 'night4', name: 'Night IV', concept: 'Contradiction and change',
+      lesson: 'Two lines are true at once; the first wins. At the sixth bell the wisp writes itself a new first line.',
+      lessonZh: '兩條規則同時成立時，排在前面的贏。第 6 響時，遊魂會在自己規格書的第一行寫上新規則。',
+      map: [
+        '#########',
+        '#...B...#',
+        '#.......#',
+        '#.......#',
+        '#...w...#',
+        '#.......#',
+        '#.......#',
+        '#.......#',
+        '#########',
+      ],
+      girl: [R('', 'always', 'stay')],
+      ghosts: [[
+        R('WHEN', 'girl_near', 'toward_girl'),
+        R('IF', 'bell_near', 'away_girl'),
+        R('', 'always', 'toward_girl'),
+      ]],
+      events: [{ tick: 6, actor: 'g0', at: 0, rule: R('WHEN', 'girl_near', 'toward_girl') }],
+      items: { bell: 1 },
+      cards: [R('IF', 'bell_near', 'away_girl')],
+    },
+  ];
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(() => {
+'use strict';
+const LV = window.HK_LEVELS, HK = window.HK;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s) => document.querySelector(s);
+const room = $('#room'); let ctx = room.getContext('2d');
+const fx = $('#fx'), fctx = fx.getContext('2d');
+const NAMES = { girl: 'Girl', wisp: 'Wisp', shade: 'Shade', snuffer: 'Snuffer' };
+const ZH = { girl: '女孩', wisp: '遊魂', shade: '影子', snuffer: '熄燭者' };
+
+let li = 0;
+let plan = null;          // { placement: [], lists: {actorId: [{t:'base',i}|{t:'card',c}]} }
+let phase = 'plan';       // plan | run | won | lost
+let sim = null, auto = false, fast = false, busy = false;
+let sel = null;           // {kind:'item', type} | {kind:'card', c}
+let hoverActor = null;
+let done = {};
+try { done = JSON.parse(localStorage.getItem('mw-done') || '{}'); } catch (e) { done = {}; }
+
+// ---------- display state (interpolated) ----------
+const disp = { actors: [], items: [], darkness: .5, flashT: 0, caught: null, dawn: 0 };
+function level() { return LV[li]; }
+function mapOf(L) { return L._map || (L._map = HK.parseMap(L.map)); }
+
+function dname(id) {
+  const L = level(); const acts = actorList(L); const a = acts.find((q) => q.id === id); if (!a) return id;
+  const same = acts.filter((q) => q.kind === a.kind);
+  return same.length > 1 ? `${NAMES[a.kind]} ${['I', 'II', 'III', 'IV'][same.indexOf(a)]}` : NAMES[a.kind];
+}
+function actorList(L) {
+  const m = mapOf(L);
+  return [{ id: 'girl', kind: 'girl' }].concat(m.starts.map((s, i) => ({ id: 'g' + i, kind: s.kind })));
+}
+function freshPlan(L) {
+  const lists = {};
+  lists.girl = L.girl.map((_, i) => ({ t: 'base', i }));
+  mapOf(L).starts.forEach((s, i) => { lists['g' + i] = (L.ghosts[i] || []).map((_, j) => ({ t: 'base', i: j })); });
+  return { placement: [], lists };
+}
+function insertsFromPlan(L, p) {
+  const out = [];
+  for (const [actor, list] of Object.entries(p.lists)) {
+    list.forEach((e, idx) => { if (e.t === 'card') out.push({ card: L.cards[e.c], cardId: e.c, actor, at: idx }); });
+  }
+  out.sort((a, b) => a.actor === b.actor ? a.at - b.at : 0);
+  return out;
+}
+function usedCards(p) { const u = new Set(); for (const l of Object.values(p.lists)) for (const e of l) if (e.t === 'card') u.add(e.c); return u; }
+function remaining(L, p, type) { return (L.items[type] || 0) - p.placement.filter((q) => q.type === type).length; }
+
+function previewState() { const L = level(); return HK.init(L, plan.placement, insertsFromPlan(L, plan)); }
+
+function syncDisplay(s, snap) {
+  const prev = new Map(disp.actors.map((a) => [a.id, a]));
+  disp.actors = s.actors.map((a) => {
+    const p = prev.get(a.id);
+    const o = { id: a.id, kind: a.kind, x: a.x, y: a.y, fx: a.x, fy: a.y, tx: a.x, ty: a.y, t0: 0, line: p ? p.line : null };
+    if (p && !snap) { o.fx = p.cx ?? p.x; o.fy = p.cy ?? p.y; o.t0 = performance.now(); }
+    o.cx = o.fx; o.cy = o.fy;
+    return o;
+  });
+  disp.items = s.items.map((i) => ({ ...i }));
+}
+
+// ---------- audio ----------
+let ac = null, master = null, drone = null, soundOn = false;
+function audio() {
+  if (ac) return ac;
+  try {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = .0; master.connect(ac.destination);
+  } catch (e) { ac = null; }
+  return ac;
+}
+function setSound(on) {
+  soundOn = on; const a = audio(); if (!a) return;
+  if (a.state === 'suspended') a.resume();
+  master.gain.setTargetAtTime(on ? .9 : 0, a.currentTime, .1);
+  $('#sound').textContent = on ? 'Sound on' : 'Sound off';
+  $('#sound').setAttribute('aria-pressed', String(on));
+  if (on && !drone) startDrone();
+}
+function startDrone() {
+  const a = ac; const g = a.createGain(); g.gain.value = .035;
+  const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 220;
+  [55, 82.4, 110.3].forEach((hz, i) => { const o = a.createOscillator(); o.type = i === 2 ? 'triangle' : 'sawtooth'; o.frequency.value = hz; o.detune.value = (i - 1) * 6; o.connect(f); o.start(); });
+  const lfo = a.createOscillator(); lfo.frequency.value = .07; const lg = a.createGain(); lg.gain.value = 120; lfo.connect(lg); lg.connect(f.frequency); lfo.start();
+  f.connect(g); g.connect(master); drone = g;
+}
+function bell(strength = 1) {
+  if (!soundOn || !ac) return;
+  const t = ac.currentTime; const out = ac.createGain(); out.gain.value = .0001; out.connect(master);
+  out.gain.exponentialRampToValueAtTime(.32 * strength, t + .01); out.gain.exponentialRampToValueAtTime(.0001, t + 3.2);
+  [[196, 1], [196 * 2.01, .5], [196 * 2.76, .35], [196 * 5.4, .18], [196 * 8.9, .08]].forEach(([hz, amp]) => {
+    const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = hz; const g = ac.createGain(); g.gain.value = amp;
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + 3.3);
+  });
+}
+function noiseBurst(dur, freq, q, vol) {
+  if (!soundOn || !ac) return;
+  const len = Math.floor(ac.sampleRate * dur); const b = ac.createBuffer(1, len, ac.sampleRate); const d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const s = ac.createBufferSource(); s.buffer = b; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+  const g = ac.createGain(); g.gain.value = vol; s.connect(f); f.connect(g); g.connect(master); s.start();
+}
+function quill() { noiseBurst(.18, 3800, 1.2, .5); setTimeout(() => noiseBurst(.12, 4600, 1.5, .35), 120); }
+function thud() {
+  if (!soundOn || !ac) return; const t = ac.currentTime;
+  const o = ac.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(30, t + .9);
+  const g = ac.createGain(); g.gain.setValueAtTime(.6, t); g.gain.exponentialRampToValueAtTime(.0001, t + 1.2); o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.3);
+  [233, 247].forEach((hz) => { const q = ac.createOscillator(); q.type = 'triangle'; q.frequency.value = hz; const qg = ac.createGain(); qg.gain.setValueAtTime(.08, t); qg.gain.exponentialRampToValueAtTime(.0001, t + 2.5); q.connect(qg); qg.connect(master); q.start(t); q.stop(t + 2.6); });
+}
+function birds() {
+  if (!soundOn || !ac) return;
+  [0, .22, .5, 1.1].forEach((d, i) => {
+    const t = ac.currentTime + d; const o = ac.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(2400 + i * 300, t); o.frequency.exponentialRampToValueAtTime(3900 + i * 200, t + .09); o.frequency.exponentialRampToValueAtTime(2800, t + .16);
+    const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .18);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + .2);
+  });
+  if (drone) drone.gain.setTargetAtTime(.008, ac.currentTime, 1.5);
+}
+function droneBack() { if (drone && ac) drone.gain.setTargetAtTime(.035, ac.currentTime, .8); }
+
+// ---------- UI rendering ----------
+function renderNights() {
+  const nav = $('#nights'); nav.innerHTML = '';
+  LV.forEach((L, i) => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.innerHTML = `${L.name}${done[L.id] ? '<span class="done" aria-label="cleared">✦</span>' : ''}`;
+    b.setAttribute('aria-current', String(i === li));
+    b.onclick = () => loadLevel(i);
+    nav.appendChild(b);
+  });
+}
+function renderLesson() {
+  const L = level();
+  $('#lesson').innerHTML = `<span class="concept">${L.name} · ${L.concept}</span><span class="en">${L.lesson}</span><span class="zh">${L.lessonZh}</span>`;
+}
+function renderPips() {
+  const t = sim ? sim.tick : 0; let h = '';
+  for (let i = 1; i <= HK.TICKS; i++) h += `<span class="pip${i <= t ? ' on' : ''}"></span>`;
+  $('#pips').innerHTML = h;
+  $('#clocklabel').textContent = phase === 'plan' ? 'Planning' : phase === 'won' ? 'Dawn' : phase === 'lost' ? `Caught at bell ${t}` : `Bell ${t} of ${HK.TICKS}`;
+}
+const ICON = {
+  salt: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15c2-5 5-8 7-8s5 3 7 8z" fill="#e9e4d8"/><circle cx="6" cy="16.5" r="1" fill="#e9e4d8"/><circle cx="14.5" cy="17" r=".8" fill="#e9e4d8"/></svg>',
+  bell: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3c-3 0-5 2.5-5 6v3l-2 3h14l-2-3V9c0-3.5-2-6-5-6z" fill="#e8b85a"/><circle cx="10" cy="16.5" r="1.6" fill="#a87b2a"/></svg>',
+  candle: '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="8" width="6" height="10" fill="#efe3c4"/><path d="M10 2c2 3 2 5 0 6-2-1-2-3 0-6z" fill="#f2a541"/></svg>',
+};
+const ITEM_NAME = { salt: 'Salt', bell: 'Bell', candle: 'Candle' };
+function renderTray() {
+  const L = level(), tray = $('#tray'); tray.innerHTML = '';
+  const locked = phase !== 'plan';
+  for (const type of Object.keys(L.items)) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tool';
+    const r = remaining(L, plan, type);
+    b.innerHTML = `${ICON[type]}<span>${ITEM_NAME[type]}</span><span class="count">${r} left</span>`;
+    b.setAttribute('aria-pressed', String(!!sel && sel.kind === 'item' && sel.type === type));
+    b.disabled = locked;
+    b.onclick = () => { sel = (sel && sel.kind === 'item' && sel.type === type) ? null : { kind: 'item', type }; renderAll(); };
+    tray.appendChild(b);
+  }
+  const used = usedCards(plan);
+  (L.cards || []).forEach((card, c) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'card' + (used.has(c) ? ' used' : '');
+    b.innerHTML = `<span class="tag">Spell card${used.has(c) ? ' · in a spec' : ' · tap, then pick a line'}</span>${HK.ruleText(card, 'wisp').replace('THE wisp', 'THE ghost')}`;
+    b.setAttribute('aria-pressed', String(!!sel && sel.kind === 'card' && sel.c === c));
+    b.disabled = locked || used.has(c);
+    b.onclick = () => { sel = (sel && sel.kind === 'card' && sel.c === c) ? null : { kind: 'card', c }; renderAll(); };
+    tray.appendChild(b);
+  });
+  if (!Object.keys(L.items).length && !(L.cards || []).length) tray.innerHTML = '<span class="stat">Nothing to place.</span>';
+}
+
+function nearNote(kind, rules) {
+  const conds = new Set(rules.map((r) => r.cond));
+  const bits = [];
+  if (conds.has('girl_near')) bits.push('girl near = within 3 steps');
+  if (conds.has('bell_near')) bits.push('bell near = within 2');
+  if (conds.has('candle_near')) bits.push('candle near = within 2');
+  return bits.length ? `<div class="nearnote">${bits.join(' · ')}</div>` : '';
+}
+
+// lineState[actorId][idx] = class string, set during playback
+let lineState = {};
+function renderBook() {
+  const L = level(), book = $('#book'); book.innerHTML = '';
+  const s = (phase === 'plan') ? previewState() : sim;
+  const cardSel = phase === 'plan' && sel && sel.kind === 'card';
+  for (const a of s.actors) {
+    const div = document.createElement('article'); div.className = 'spec'; div.dataset.actor = a.id;
+    const req = a.kind === 'girl' ? 'requirements · girl' : `.kiro/specs/ghost-${a.kind}`;
+    let h = `<h3><span class="who">${dname(a.id)}</span><span>${ZH[a.kind]}</span><span style="margin-left:auto">${req}</span></h3><ol>`;
+    const list = phase === 'plan' ? plan.lists[a.id] : null;
+    a.rules.forEach((r, i) => {
+      if (cardSel) h += `<li><button class="slot" type="button" data-actor="${a.id}" data-at="${i}">Insert at line ${i + 1}</button></li>`;
+      const cls = ['line'];
+      if (r.src === 'card') cls.push('card-line');
+      if (r.src === 'rewrite') cls.push('rewrite');
+      const st = (lineState[a.id] || {})[i]; if (st) cls.push(st);
+      const mark = st === 'lit' ? '✓' : st === 'false' ? '✗' : st === 'shadowed' ? '◐' : '';
+      const rm = (phase === 'plan' && r.src === 'card') ? `<button class="rm" type="button" data-actor="${a.id}" data-idx="${i}" aria-label="Remove card">×</button>` : `<span class="mark" aria-hidden="true">${mark}</span>`;
+      h += `<li class="${cls.join(' ')}" data-actor="${a.id}" data-idx="${i}"><span class="ln">${i + 1}</span><span class="txt">${HK.ruleText(r, a.kind)}</span>${rm}</li>`;
+    });
+    if (cardSel) h += `<li><button class="slot" type="button" data-actor="${a.id}" data-at="${a.rules.length}">Insert at line ${a.rules.length + 1}</button></li>`;
+    h += '</ol>';
+    for (const ev of L.events || []) if (ev.actor === a.id && (phase === 'plan' || sim.tick < ev.tick)) h += `<div class="foot">At bell ${ev.tick}, this spec writes itself a new line ${ev.at + 1}: “${HK.ruleText(ev.rule, a.kind)}”</div>`;
+    h += nearNote(a.kind, a.rules);
+    div.innerHTML = h;
+    div.addEventListener('mouseenter', () => { hoverActor = a.id; });
+    div.addEventListener('mouseleave', () => { hoverActor = null; });
+    book.appendChild(div);
+  }
+  book.querySelectorAll('.slot').forEach((b) => b.onclick = () => {
+    const list = plan.lists[b.dataset.actor]; list.splice(+b.dataset.at, 0, { t: 'card', c: sel.c });
+    sel = null; quill(); renderAll(); refreshPreview();
+  });
+  book.querySelectorAll('.rm').forEach((b) => b.onclick = () => {
+    plan.lists[b.dataset.actor].splice(+b.dataset.idx, 1); renderAll(); refreshPreview();
+  });
+  updateCurl();
+}
+function updateCurl() {
+  const g = disp.actors.find((a) => a.id === 'girl'); if (!g) return;
+  let d = 99; for (const a of disp.actors) if (a.kind !== 'girl') d = Math.min(d, Math.abs(a.x - g.x) + Math.abs(a.y - g.y));
+  const el = document.querySelector('.spec[data-actor="girl"]'); if (el) el.style.setProperty('--curl', String(Math.max(0, Math.min(1, (6 - d) / 5))));
+}
+function renderControls() {
+  $('#step').disabled = busy || phase === 'won' || phase === 'lost';
+  $('#play').disabled = busy && auto || phase === 'won' || phase === 'lost';
+  $('#play').textContent = phase === 'run' ? 'Ring the rest' : 'Ring midnight';
+  $('#reset').disabled = phase === 'plan';
+  $('#clear').disabled = phase !== 'plan';
+  guide();
+}
+function renderAll() { renderNights(); renderTray(); renderBook(); renderPips(); renderControls(); }
+
+function refreshPreview() { if (phase === 'plan') syncDisplay(previewState(), true); }
+
+function loadLevel(i) {
+  lastLoss = null; coachTile = null; lastTarget = '';
+  li = i; plan = freshPlan(level()); phase = 'plan'; sim = null; sel = null; auto = false; busy = false; lineState = {};
+  disp.caught = null; disp.dawn = 0; $('#verdict').innerHTML = ''; $('#verdict').className = 'verdict'; $('#vignette').classList.remove('on');
+  syncDisplay(previewState(), true); renderLesson(); renderAll(); resize(); droneBack();
+  { const m = mapOf(level()); cam.th = 1.5; cam.tx = m.w / 2; cam.ty = m.h / 2; cam.D = baseD(m) * 1.2; }
+}
+function backToPlan() {
+  phase = 'plan'; sim = null; auto = false; busy = false; lineState = {}; disp.caught = null; disp.dawn = 0;
+  $('#verdict').innerHTML = ''; $('#verdict').className = 'verdict'; $('#vignette').classList.remove('on');
+  syncDisplay(previewState(), true); renderAll(); droneBack();
+}
+
+// ---------- tutorial coach ----------
+// Guided placements for the first two nights; later nights get general hints only.
+const GUIDE = {
+  tutorial: { items: [{ type: 'salt', x: 4, y: 3,
+    en: 'The wisp has one line: move toward the girl. Every way to her goes through the gap in the wall.',
+    zh: '遊魂只有一行規則：朝女孩前進。牠要找到女孩，一定得穿過牆上的缺口。' }] },
+  night1: { items: [{ type: 'bell', x: 4, y: 3,
+    en: 'Bell near = within 2 steps. Right above the girl, both wisps hear it before they reach her.',
+    zh: '「鈴在附近」是 2 步以內。放在女孩正上方，兩隻遊魂在碰到她之前都會聽到。' }] },
+};
+let guideOn = true, lastTarget = '', coachTile = null, lastLoss = null;
+try { guideOn = localStorage.getItem('mw-guide') !== 'off'; } catch (e) { /* default on */ }
+const ITEM_LABEL = { salt: 'salt', bell: 'bell', candle: 'candle' };
+function guide() {
+  if (!plan) return;
+  document.querySelectorAll('.pulse').forEach((e) => e.classList.remove('pulse'));
+  const box = $('#coach'); coachTile = null;
+  document.body.classList.toggle('coached', guideOn);
+  $('#tut').textContent = guideOn ? 'Tutorial on' : 'Tutorial off'; $('#tut').setAttribute('aria-pressed', String(guideOn));
+  if (!guideOn) { box.hidden = true; return; }
+  box.hidden = false;
+  const L = level(), G = GUIDE[L.id] || {}, items = G.items || [];
+  const placedAt = (it) => plan.placement.some((p) => p.type === it.type && p.x === it.x && p.y === it.y);
+  const todo = items.find((it) => !placedAt(it) && remaining(L, plan, it.type) > 0);
+  const unusedCard = (L.cards || []).findIndex((_, c) => !usedCards(plan).has(c));
+  let en = '', zh = '', target = null, done = false;
+  if (phase === 'run') {
+    en = 'Watch the spec book. At each bell, the lit line is what that ghost does; the tag above each ghost shows its line number.';
+    zh = '看規格書。每一響，亮起來的那一行就是那隻鬼這一響做的事；鬼頭上的標籤是行號。';
+  } else if (phase === 'lost') {
+    const shadow = lastLoss && lastLoss.shadowed.length;
+    en = shadow ? 'She was caught, and your card never ran: a line above it was true first. Press Back to planning, then move the card up.' : 'She was caught. The note under the board says which line did it. Press Back to planning and try again.';
+    zh = shadow ? '她被抓了，而且你的卡片一次都沒執行：上面那行先成立了。按「Back to planning」，再把卡片往上移。' : '她被抓了。棋盤下方的說明會告訴你是哪一行出事。按「Back to planning」再試一次。';
+    target = '#reset';
+  } else if (phase === 'won') {
+    done = true;
+    const next = LV[li + 1];
+    en = 'Dawn. Lines that never ran burned away; the gold lines are the ones that kept her alive.' + (next ? ` Next: ${next.name}.` : ' You have seen every night.');
+    zh = '天亮了。整晚沒執行過的規則燒掉了，金色的就是讓她活下來的規則。' + (next ? `下一關：${next.name}。` : '所有夜晚都過完了。');
+    if (next) target = `#nights button:nth-child(${li + 2})`;
+  } else {
+    // planning
+    const shadowCard = lastLoss && lastLoss.shadowed.find((c) => usedCards(plan).has(c));
+    let rmSel = null;
+    if (shadowCard != null) for (const [actor, list] of Object.entries(plan.lists)) list.forEach((e, idx) => { if (e.t === 'card' && e.c === shadowCard && idx > 0) rmSel = `.spec[data-actor="${actor}"] .rm[data-idx="${idx}"]`; });
+    if (rmSel) {
+      en = 'This card was shadowed: the line above it was true first, and only the first true line runs. Tap × to take it out, then insert it at line 1.';
+      zh = '這張卡片被遮蔽了：上面那行先成立，而只有第一條成立的規則會執行。按 × 拿掉，再插到第 1 行。';
+      target = rmSel;
+    } else if (sel && sel.kind === 'item') {
+      const it = items.find((q) => q.type === sel.type && !placedAt(q));
+      if (it) { coachTile = { x: it.x, y: it.y }; en = `Tap the glowing tile on the map. ${it.en}`; zh = `點地圖上發光的那一格。${it.zh}`; }
+      else { en = 'Tap a floor tile to place it. The dotted diamond shows how far it reaches.'; zh = '點一格地板放下去。虛線菱形是它影響的範圍。'; }
+    } else if (sel && sel.kind === 'card' && lastLoss && lastLoss.shadowed.includes(sel.c)) {
+      en = 'This time insert it at line 1, above the line that shadowed it.';
+      zh = '這次插在第 1 行，放到遮住它的那一行上面。';
+      target = '.slot[data-at="0"]';
+    } else if (sel && sel.kind === 'card') {
+      en = 'Now pick a line in a ghost’s spec. Order matters: each bell, a ghost runs only its first true line.';
+      zh = '接著在鬼的規格書裡選一行插入。順序很重要：每一響，鬼只執行第一條成立的規則。';
+      target = '.slot';
+    } else if (todo) {
+      en = `Pick the ${ITEM_LABEL[todo.type]} below the map. ${todo.en}`; zh = `點地圖下方的${{ salt: '鹽', bell: '鈴', candle: '蠟燭' }[todo.type]}。${todo.zh}`;
+      target = `#tray .tool:nth-child(${Object.keys(L.items).indexOf(todo.type) + 1})`;
+    } else if (unusedCard >= 0) {
+      const first = unusedCard === 0;
+      en = first ? 'Tap a spell card. It is one EARS rule you can write into a ghost’s spec.' : 'One more card. Each wisp has its own spec.';
+      zh = first ? '點一張咒文卡。它是一條 EARS 規則，可以寫進鬼的規格書。' : '還有一張卡。每隻遊魂都有自己的規格書。';
+      target = `#tray > :nth-child(${Object.keys(L.items).length + unusedCard + 1})`;
+    } else if (!items.length && plan.placement.length === 0 && Object.keys(L.items).length) {
+      en = 'Read each spec, then pick an item and tap a floor tile. Nothing is guided from here on.';
+      zh = '先讀每本規格書，再選一個物品、點一格地板放下去。從這一關開始不再提示位置。';
+      target = '#tray .tool';
+    } else {
+      en = 'Ring midnight. Each bell, every spec is read top to bottom, and only the first true line runs.';
+      zh = '敲響午夜。每一響，每本規格書都由上往下讀，只執行第一條成立的規則。';
+      target = '#play';
+    }
+  }
+  box.className = 'coach' + (done ? ' done' : '');
+  box.innerHTML = `<div class="row"><span class="tag">${done ? 'Dawn' : 'Tutorial'} · ${L.name}</span><button class="skip" id="skip" type="button">Hide tutorial</button></div><div class="en">${en}</div><div class="zh">${zh}</div>`;
+  $('#skip').onclick = () => setGuide(false);
+  const els = target ? [...document.querySelectorAll(target)] : [];
+  els.forEach((e) => e.classList.add('pulse'));
+  const el = els[0];
+  if (el && target !== lastTarget && lastTarget !== '') {
+    const r = el.getBoundingClientRect(), bottomUI = innerWidth <= 860 ? box.offsetHeight + 16 : 0;
+    if (r.top < 0 || r.bottom > innerHeight - bottomUI) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+  }
+  lastTarget = target || '-';
+}
+function setGuide(on) { guideOn = on; try { localStorage.setItem('mw-guide', on ? 'on' : 'off'); } catch (e) { /* ignore */ } guide(); }
+
+// ---------- canvas geometry ----------
+let TS = 60, DPR = 1;
+let view3d = true;
+try { view3d = localStorage.getItem('mw-view') !== '2d'; } catch (e) { /* default 2.5D */ }
+// 2.5D camera: pitch-only (no yaw) so the floor can be drawn as horizontal strips.
+const TT = 64;                           // floor texture: pixels per tile
+const tex = document.createElement('canvas'), texCtx = tex.getContext('2d');
+const TH_PLAN = 1.12, TH_NIGHT = .9;     // camera pitch in radians (π/2 = straight down)
+const cam = { th: 1.5, tx: 0, ty: 0, D: 20 };
+let camFocus = null, shakeT = 0, fit = { K: 1, X0: 0, Y0: 0 };
+function baseD(m) { return Math.max(m.w, m.h) * 1.7; }
+function proj(x, y, z, c) {
+  const v = y - c.ty, s = Math.sin(c.th), co = Math.cos(c.th);
+  const depth = c.D - co * v - s * z;
+  return { sx: (x - c.tx) / depth, sy: (-s * v + co * z) / depth, depth };
+}
+function fitFor(m, th, Wc, Hc) {
+  const c = { th, tx: m.w / 2, ty: m.h / 2, D: baseD(m) };
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (const [x, y, z] of [[0, 0, 0], [m.w, 0, 0], [0, m.h, 0], [m.w, m.h, 0], [0, 0, 1.3], [m.w, 0, 1.3], [0, m.h, .25], [m.w, m.h, .25]]) {
+    const p = proj(x, y, z, c); x0 = Math.min(x0, p.sx); x1 = Math.max(x1, p.sx); y0 = Math.min(y0, -p.sy); y1 = Math.max(y1, -p.sy);
+  }
+  const K = Math.min(Wc * .96 / (x1 - x0), Hc * .96 / (y1 - y0));
+  return { K, X0: Wc / 2 - K * (x0 + x1) / 2 + K * 0, Y0: Hc / 2 - K * (y0 + y1) / 2, aspect: (y1 - y0) / (x1 - x0) };
+}
+// world (tiles) -> canvas CSS px, plus pixels-per-tile at that depth
+function P(x, y, z) {
+  const p = proj(x, y, z, cam);
+  const sh = shakeT > 0 ? Math.sin(performance.now() / 23) * shakeT * 6 : 0;
+  return { X: fit.X0 + fit.K * p.sx + sh, Y: fit.Y0 - fit.K * p.sy, k: fit.K / p.depth };
+}
+function resize() {
+  const m = mapOf(level()); const w = room.parentElement.clientWidth;
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  TS = w / m.w;
+  const h = view3d ? Math.min(w * fitFor(m, TH_PLAN, 1, 1).aspect, innerHeight * .78) : TS * m.h;
+  room.width = Math.round(w * DPR); room.height = Math.round(h * DPR);
+  room.style.height = h + 'px';
+  fx.width = Math.round(innerWidth * DPR); fx.height = Math.round(innerHeight * DPR);
+}
+new ResizeObserver(() => resize()).observe(room.parentElement);
+addEventListener('resize', resize);
+
+function tileAt(ev) {
+  const r = room.getBoundingClientRect();
+  const X = ev.clientX - r.left, Y = ev.clientY - r.top;
+  if (!view3d) return { x: Math.floor(X / TS), y: Math.floor(Y / TS) };
+  const s = Math.sin(cam.th), co = Math.cos(cam.th);
+  const q = -(Y - fit.Y0) / fit.K;
+  const v = q * cam.D / (q * co - s);
+  const depth = cam.D - co * v;
+  return { x: Math.floor(cam.tx + (X - fit.X0) / fit.K * depth), y: Math.floor(cam.ty + v) };
+}
+room.addEventListener('click', (ev) => {
+  if (phase !== 'plan') return;
+  const t = tileAt(ev), L = level(), m = mapOf(L);
+  const idx = plan.placement.findIndex((p) => p.x === t.x && p.y === t.y);
+  if (idx >= 0) { plan.placement.splice(idx, 1); refreshPreview(); renderAll(); return; }
+  const ghostHere = m.starts.findIndex((s) => s.x === t.x && s.y === t.y);
+  if (ghostHere >= 0) { hoverActor = hoverActor === 'g' + ghostHere ? null : 'g' + ghostHere; return; }
+  if (!sel || sel.kind !== 'item') return;
+  if (!m.free.some((f) => f.x === t.x && f.y === t.y)) return;
+  if (remaining(L, plan, sel.type) <= 0) return;
+  plan.placement.push({ type: sel.type, x: t.x, y: t.y });
+  if (remaining(L, plan, sel.type) <= 0) sel = null;
+  noiseBurst(.08, 1800, 2, .25);
+  refreshPreview(); renderAll();
+});
+let hoverTile = null;
+room.addEventListener('mousemove', (ev) => { hoverTile = tileAt(ev); });
+room.addEventListener('mouseleave', () => { hoverTile = null; });
+
+// ---------- drawing ----------
+const ease = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+function tickDur() { return reduce ? 1 : fast ? 260 : 620; }
+let darkCanvas = document.createElement('canvas');
+
+function draw(now) {
+  const L = level(), m = mapOf(L);
+  for (const a of disp.actors) {
+    const k = a.t0 ? Math.min(1, (now - a.t0) / tickDur()) : 1;
+    const e = ease(k); a.cx = a.fx + (a.tx - a.fx) * e; a.cy = a.fy + (a.ty - a.fy) * e;
+  }
+  const girl = disp.actors.find((a) => a.id === 'girl');
+  const inBed = girl && Math.abs(girl.cx - m.bed.x) < .01 && Math.abs(girl.cy - m.bed.y) < .01;
+  const target = phase === 'plan' ? .22 : phase === 'won' ? .1 : .8;
+  disp.darkness += (target - disp.darkness) * .06;
+  if (view3d) draw3d(now, m, girl, inBed); else draw2d(now, m, girl, inBed);
+  drawFx(now);
+  updateCurl();
+  requestAnimationFrame(draw);
+}
+
+// Top-down board: floor, walls, bed, ranges, hover. `flat` = texture for the 2.5D floor (no upright things).
+function drawBoard(now, m, girl, inBed, flat) {
+  const ts = TS;
+  ctx.fillStyle = '#1a140f'; ctx.fillRect(0, 0, m.w * ts, m.h * ts);
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    if (m.walls.has(y * m.w + x)) continue;
+    ctx.fillStyle = ((x + y) & 1) ? '#2a2119' : '#2f251c'; ctx.fillRect(x * ts, y * ts, ts, ts);
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x * ts, y * ts + ts * .5 + ((x * 7) % 5)); ctx.lineTo(x * ts + ts, y * ts + ts * .5 + ((x * 7) % 5)); ctx.stroke();
+  }
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    if (!m.walls.has(y * m.w + x)) continue;
+    ctx.fillStyle = '#070605'; ctx.fillRect(x * ts, y * ts, ts, ts);
+    if (!flat && y + 1 < m.h && !m.walls.has((y + 1) * m.w + x)) { ctx.fillStyle = '#2b2219'; ctx.fillRect(x * ts, y * ts + ts - 4, ts, 4); }
+  }
+  if (m.window && !flat) drawWindow(m);
+  if (m.window && flat) { const { x, y } = m.window; ctx.fillStyle = 'rgba(80,110,130,.25)'; ctx.fillRect(x * ts + ts * .1, y * ts + ts * .1, ts * .8, ts * .8); }
+  { const { x, y } = m.bed; ctx.fillStyle = '#3b2a1c'; ctx.fillRect(x * ts + ts * .08, y * ts + ts * .06, ts * .84, ts * .88);
+    ctx.fillStyle = '#cdbf9c'; ctx.fillRect(x * ts + ts * .14, y * ts + ts * .1, ts * .72, ts * .22); }
+  if (phase === 'plan') for (const it of disp.items) {
+    if (it.type === 'bell' || it.type === 'candle') diamond(it.x, it.y, 2, it.type === 'bell' ? 'rgba(232,184,90,.10)' : 'rgba(242,165,65,.10)', it.type === 'bell' ? 'rgba(232,184,90,.4)' : 'rgba(242,165,65,.35)');
+  }
+  if (hoverActor && hoverActor !== 'girl') {
+    const a = disp.actors.find((q) => q.id === hoverActor);
+    if (a) diamond(Math.round(a.cx), Math.round(a.cy), 3, 'rgba(127,209,199,.08)', 'rgba(127,209,199,.5)');
+  }
+  if (!flat) for (const it of disp.items) drawItem(it, now);
+  if (coachTile && phase === 'plan') {
+    const a = .5 + .5 * Math.sin(now / 240);
+    ctx.fillStyle = `rgba(242,165,65,${.14 + .16 * a})`; ctx.fillRect(coachTile.x * ts + 2, coachTile.y * ts + 2, ts - 4, ts - 4);
+    ctx.strokeStyle = `rgba(255,200,120,${.5 + .5 * a})`; ctx.lineWidth = 3; ctx.strokeRect(coachTile.x * ts + 3, coachTile.y * ts + 3, ts - 6, ts - 6);
+  }
+  if (phase === 'plan' && hoverTile && sel && sel.kind === 'item' && m.free.some((f) => f.x === hoverTile.x && f.y === hoverTile.y)) {
+    ctx.strokeStyle = 'rgba(242,165,65,.7)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeRect(hoverTile.x * ts + 3, hoverTile.y * ts + 3, ts - 6, ts - 6); ctx.setLineDash([]);
+  }
+  if (girl && (!flat || inBed)) drawGirl(girl, inBed, now);
+  if (!flat) for (const a of disp.actors) if (a.kind !== 'girl') drawGhost(a, now);
+}
+function drawWindow(m) {
+  const ts = TS, { x, y } = m.window; ctx.fillStyle = '#2b3a44'; ctx.fillRect(x * ts + ts * .12, y * ts + ts * .12, ts * .76, ts * .76);
+  ctx.strokeStyle = '#0d0b0a'; ctx.lineWidth = 3; ctx.strokeRect(x * ts + ts * .12, y * ts + ts * .12, ts * .76, ts * .76);
+  ctx.beginPath(); ctx.moveTo(x * ts + ts / 2, y * ts + ts * .12); ctx.lineTo(x * ts + ts / 2, y * ts + ts * .88); ctx.moveTo(x * ts + ts * .12, y * ts + ts / 2); ctx.lineTo(x * ts + ts * .88, y * ts + ts / 2); ctx.stroke();
+}
+// Darkness with light holes, drawn over the top-down board, then candle bloom and the dawn sweep.
+function drawDarkAndLight(now, m, girl, k) {
+  const ts = TS, Wd = Math.round(m.w * ts * k), Hd = Math.round(m.h * ts * k);
+  if (darkCanvas.width !== Wd || darkCanvas.height !== Hd) { darkCanvas.width = Wd; darkCanvas.height = Hd; }
+  const d = darkCanvas.getContext('2d'); d.setTransform(k, 0, 0, k, 0, 0);
+  d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, m.w * ts, m.h * ts);
+  d.fillStyle = `rgba(4,3,2,${disp.darkness})`; d.fillRect(0, 0, m.w * ts, m.h * ts);
+  d.globalCompositeOperation = 'destination-out';
+  const hole = (x, y, r, a) => { const g = d.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.beginPath(); d.arc(x, y, r, 0, Math.PI * 2); d.fill(); };
+  for (const it of disp.items) if (it.type === 'candle' && it.lit) hole((it.x + .5) * ts, (it.y + .5) * ts, ts * (2.6 + Math.sin(now / 130 + it.x) * .08), 1);
+  if (girl) hole((girl.cx + .5) * ts, (girl.cy + .5) * ts, ts * (1.15 + Math.sin(now / 900) * .06), .8);
+  for (const a of disp.actors) if (a.kind !== 'girl') hole((a.cx + .5) * ts, (a.cy + .5) * ts, ts * .9, .6);
+  if (m.window) hole((m.window.x + .5) * ts, (m.window.y + .5) * ts, ts * 1.4, .55);
+  if (disp.dawn > 0) { d.fillStyle = `rgba(0,0,0,${disp.dawn})`; d.fillRect(0, 0, m.w * ts, m.h * ts); }
+  ctx.drawImage(darkCanvas, 0, 0, m.w * ts, m.h * ts);
+  ctx.globalCompositeOperation = 'lighter';
+  for (const it of disp.items) if (it.type === 'candle' && it.lit) {
+    const x = (it.x + .5) * ts, y = (it.y + .4) * ts, g = ctx.createRadialGradient(x, y, 0, x, y, ts * 1.6);
+    g.addColorStop(0, 'rgba(242,165,65,.28)'); g.addColorStop(1, 'rgba(242,165,65,0)'); ctx.fillStyle = g; ctx.fillRect(x - ts * 2, y - ts * 2, ts * 4, ts * 4);
+  }
+  if (disp.dawn > 0) {
+    const sweep = Math.min(1, disp.dawn * 1.2);
+    const g = ctx.createLinearGradient(0, 0, m.w * ts, m.h * ts); g.addColorStop(Math.max(0, sweep - .3), 'rgba(255,214,150,0)'); g.addColorStop(sweep, `rgba(255,214,150,${.25 * disp.dawn})`); g.addColorStop(Math.min(1, sweep + .01), 'rgba(255,214,150,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, m.w * ts, m.h * ts);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+function drawLabel(a) {
+  if (phase === 'plan' || a.line == null) return;
+  if (a.kind === 'girl' && disp.actors.some((g) => g.kind !== 'girl' && Math.round(g.cx) === Math.round(a.cx) && Math.round(g.cy) === Math.round(a.cy))) return; // the ghost's label wins
+  const ts = TS, x = (a.cx + .5) * ts, y = (a.cy) * ts - 2; const txt = 'L' + (a.line + 1);
+  ctx.font = `500 ${Math.max(10, ts * .2)}px "IBM Plex Mono", monospace`; const w = ctx.measureText(txt).width + 10;
+  ctx.fillStyle = a.kind === 'girl' ? 'rgba(232,217,181,.95)' : 'rgba(242,165,65,.95)'; roundRect(x - w / 2, y - ts * .28, w, ts * .26, 3); ctx.fill();
+  ctx.fillStyle = '#0d0b0a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x, y - ts * .15);
+}
+function drawCaughtTint(now, w, h) {
+  if (!disp.caught) return;
+  const k = Math.min(1, (now - disp.caught) / 900);
+  ctx.fillStyle = `rgba(40,0,0,${.55 * k})`; ctx.fillRect(0, 0, w, h);
+}
+
+function draw2d(now, m, girl, inBed) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, room.width, room.height);
+  drawBoard(now, m, girl, inBed, false);
+  drawDarkAndLight(now, m, girl, DPR);
+  for (const a of disp.actors) drawLabel(a);
+  drawCaughtTint(now, m.w * TS, m.h * TS);
+}
+
+// ---------- 2.5D ----------
+function camGoal(now, m, girl) {
+  const base = { th: phase === 'plan' ? TH_PLAN : TH_NIGHT, tx: m.w / 2, ty: m.h / 2, D: baseD(m) };
+  if (phase === 'lost' && disp.caught && girl) return { th: .78, tx: girl.cx + .5, ty: girl.cy + .5, D: base.D * .48, rate: .045 };
+  if (phase === 'won') return { th: 1.18, tx: base.tx, ty: base.ty, D: base.D * 1.04, rate: .02 };
+  if (camFocus && now < camFocus.until) {
+    const a = disp.actors.find((q) => q.id === camFocus.id);
+    if (a) return { th: .84, tx: (a.cx + .5 + base.tx) / 2, ty: (a.cy + .5 + base.ty) / 2, D: base.D * .72, rate: .07 };
+  }
+  return { ...base, rate: phase === 'plan' ? .045 : .03 };
+}
+function wallH(m, y) { return y === 0 ? 1.25 : y === m.h - 1 ? .22 : .55; }
+function shade(rgb, b) { return `rgb(${Math.round(rgb[0] * b)},${Math.round(rgb[1] * b)},${Math.round(rgb[2] * b)})`; }
+function quad(pts, fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(pts[0].X, pts[0].Y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].X, pts[i].Y); ctx.closePath(); ctx.fill(); }
+function drawWallBlock(m, x, y) {
+  const h = wallH(m, y), b = Math.max(.35, 1 - disp.darkness * .75) + disp.dawn * .3;
+  const isWall = (xx, yy) => xx < 0 || yy < 0 || xx >= m.w || yy >= m.h || m.walls.has(yy * m.w + xx);
+  if (cam.tx > x + 1 && !isWall(x + 1, y)) quad([P(x + 1, y, 0), P(x + 1, y + 1, 0), P(x + 1, y + 1, h), P(x + 1, y, h)], shade([40, 31, 24], b));
+  if (cam.tx < x && !isWall(x - 1, y)) quad([P(x, y, 0), P(x, y + 1, 0), P(x, y + 1, h), P(x, y, h)], shade([40, 31, 24], b));
+  if (!isWall(x, y + 1) || y === m.h - 1) {
+    const f = [P(x, y + 1, 0), P(x + 1, y + 1, 0), P(x + 1, y + 1, h), P(x, y + 1, h)];
+    quad(f, shade(y === 0 ? [66, 50, 37] : [54, 42, 31], b));
+    if (y === 0) { // faded wallpaper stripes and a skirting board on the back wall
+      ctx.strokeStyle = `rgba(0,0,0,${.22})`; ctx.lineWidth = 1;
+      for (let i = 1; i < 4; i++) { const a = P(x + i / 4, y + 1, .12), c = P(x + i / 4, y + 1, h); ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(c.X, c.Y); ctx.stroke(); }
+      quad([P(x, y + 1, 0), P(x + 1, y + 1, 0), P(x + 1, y + 1, .12), P(x, y + 1, .12)], shade([26, 19, 14], b));
+    }
+  }
+  const top = [P(x, y, h), P(x + 1, y, h), P(x + 1, y + 1, h), P(x, y + 1, h)];
+  quad(top, shade([78, 62, 47], b));
+  ctx.strokeStyle = `rgba(232,217,181,${.10 * b})`; ctx.lineWidth = 1;
+  if (!isWall(x, y + 1)) { ctx.beginPath(); ctx.moveTo(top[3].X, top[3].Y); ctx.lineTo(top[2].X, top[2].Y); ctx.stroke(); }
+}
+// Draw a top-down sprite function standing upright at tile (cx, cy).
+function upright(cx, cy, fn, lift = 0, shadow = .3) {
+  const p = P(cx + .5, cy + .62, 0);
+  const s = p.k / TS;
+  if (shadow) { ctx.fillStyle = `rgba(0,0,0,${shadow})`; ctx.beginPath(); ctx.ellipse(p.X, p.Y, p.k * .26, p.k * .26 * Math.sin(cam.th) * .55, 0, 0, Math.PI * 2); ctx.fill(); }
+  const q = P(cx + .5, cy + .62, lift);
+  ctx.save(); ctx.translate(q.X, q.Y); ctx.scale(s, s); ctx.translate(-(cx + .5) * TS, -(cy + .9) * TS); fn(); ctx.restore();
+}
+function draw3d(now, m, girl, inBed) {
+  // camera
+  const dt = Math.min(500, now - (draw3d.last || now)); draw3d.last = now;
+  const g = camGoal(now, m, girl), r = reduce ? 1 : 1 - Math.pow(1 - g.rate, dt / 16.7);
+  for (const k of ['th', 'tx', 'ty', 'D']) cam[k] += (g[k] - cam[k]) * r;
+  shakeT = Math.max(0, shakeT - .03 * dt / 16.7);
+  const Wc = room.width / DPR, Hc = room.height / DPR;
+  fit = fitFor(m, cam.th, Wc, Hc);
+  { const t = Math.max(0, Math.min(1, (baseD(m) / cam.D - 1) / .9)); fit.X0 += (Wc / 2 - fit.X0) * t; fit.Y0 += (Hc * .55 - fit.Y0) * t; }
+  // 1. top-down floor texture (the 2D board without upright things, then darkness)
+  const mainTS = TS, mainCtx = ctx;
+  if (tex.width !== m.w * TT || tex.height !== m.h * TT) { tex.width = m.w * TT; tex.height = m.h * TT; }
+  ctx = texCtx; TS = TT; ctx.setTransform(1, 0, 0, 1, 0, 0);
+  drawBoard(now, m, girl, inBed, true);
+  drawDarkAndLight(now, m, girl, 1);
+  ctx = mainCtx; TS = mainTS;
+  // 2. project the floor as thin horizontal strips
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#050403'; ctx.fillRect(0, 0, Wc, Hc);
+  const N = 16;
+  for (let i = 0; i < m.h * N; i++) {
+    const a = P(0, i / N, 0), b = P(m.w, i / N, 0), c = P(0, (i + 1) / N, 0);
+    ctx.drawImage(tex, 0, i * TT / N, m.w * TT, TT / N, a.X, a.Y, b.X - a.X, c.Y - a.Y + .7);
+  }
+  if (coachTile && phase === 'plan') { // the tutorial's glowing tile, drawn after projection so darkness cannot dim it
+    const a = .5 + .5 * Math.sin(now / 240), { x, y } = coachTile, c = [P(x, y, .02), P(x + 1, y, .02), P(x + 1, y + 1, .02), P(x, y + 1, .02)];
+    quad(c, `rgba(242,165,65,${.16 + .18 * a})`);
+    ctx.strokeStyle = `rgba(255,205,130,${.55 + .45 * a})`; ctx.lineWidth = 2.5; ctx.beginPath(); c.forEach((q, i) => i ? ctx.lineTo(q.X, q.Y) : ctx.moveTo(q.X, q.Y)); ctx.closePath(); ctx.stroke();
+  }
+  // 3. walls and upright sprites, back to front
+  const list = [];
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (m.walls.has(y * m.w + x)) list.push({ key: y + 1 - Math.abs(x + .5 - cam.tx) * .001, f: () => drawWallBlock(m, x, y) });
+  if (m.window) list.push({ key: m.window.y + .5, f: () => upright(m.window.x, m.window.y, () => drawWindow(m), .1, .2) });
+  for (const it of disp.items) list.push({ key: it.y + .55, f: () => upright(it.x, it.y, () => drawItem(it, now), 0, it.type === 'salt' ? .15 : .3) });
+  for (const a of disp.actors) {
+    if (a.kind === 'girl' && inBed) continue;
+    const ghost = a.kind !== 'girl';
+    list.push({ key: a.cy + .6, f: () => upright(a.cx, a.cy, () => { ghost ? drawGhost(a, now) : drawGirl(a, false, now); drawLabel(a); }, ghost ? .18 : 0, ghost ? .18 : .35) });
+  }
+  if (girl && inBed && phase !== 'plan') list.push({ key: girl.cy + .6, f: () => upright(girl.cx, girl.cy, () => drawLabel(girl), 0, 0) });
+  list.sort((p, q) => p.key - q.key);
+  for (const d of list) d.f();
+  // 4. screen-space light
+  ctx.globalCompositeOperation = 'lighter';
+  for (const it of disp.items) if (it.type === 'candle' && it.lit) {
+    const p = P(it.x + .5, it.y + .55, .55), rr = p.k * 1.3, gg = ctx.createRadialGradient(p.X, p.Y, 0, p.X, p.Y, rr);
+    gg.addColorStop(0, 'rgba(242,165,65,.22)'); gg.addColorStop(1, 'rgba(242,165,65,0)'); ctx.fillStyle = gg; ctx.fillRect(p.X - rr, p.Y - rr, rr * 2, rr * 2);
+  }
+  if (disp.dawn > 0) { ctx.fillStyle = `rgba(255,214,150,${.08 * disp.dawn})`; ctx.fillRect(0, 0, Wc, Hc); }
+  ctx.globalCompositeOperation = 'source-over';
+  // vignette in the room itself
+  const vg = ctx.createRadialGradient(Wc / 2, Hc / 2, Math.min(Wc, Hc) * .35, Wc / 2, Hc / 2, Math.max(Wc, Hc) * .75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${.55 - disp.dawn * .3})`); ctx.fillStyle = vg; ctx.fillRect(0, 0, Wc, Hc);
+  drawCaughtTint(now, Wc, Hc);
+}
+function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function diamond(cx, cy, r, fill, stroke) {
+  const m = mapOf(level()), ts = TS;
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    if (Math.abs(x - cx) + Math.abs(y - cy) > r || m.walls.has(y * m.w + x)) continue;
+    ctx.fillStyle = fill; ctx.fillRect(x * ts + 1, y * ts + 1, ts - 2, ts - 2);
+    ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.strokeRect(x * ts + 2.5, y * ts + 2.5, ts - 5, ts - 5); ctx.setLineDash([]);
+  }
+}
+function drawItem(it, now) {
+  const ts = TS, x = it.x * ts, y = it.y * ts;
+  if (it.type === 'salt') {
+    ctx.fillStyle = '#e9e4d8';
+    ctx.beginPath(); ctx.moveTo(x + ts * .18, y + ts * .78); ctx.quadraticCurveTo(x + ts * .5, y + ts * .18, x + ts * .82, y + ts * .78); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 9; i++) { ctx.fillRect(x + ts * (.15 + ((i * 37) % 70) / 100), y + ts * (.8 + ((i * 13) % 12) / 100), 2, 2); }
+  } else if (it.type === 'bell') {
+    const sw = Math.sin(now / 300 + it.x) * .06;
+    ctx.save(); ctx.translate(x + ts / 2, y + ts * .25); ctx.rotate(sw);
+    ctx.fillStyle = '#e8b85a'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(ts * .28, 0, ts * .26, ts * .4, ts * .34, ts * .5); ctx.lineTo(-ts * .34, ts * .5); ctx.bezierCurveTo(-ts * .26, ts * .4, -ts * .28, 0, 0, 0); ctx.fill();
+    ctx.fillStyle = '#9c7024'; ctx.beginPath(); ctx.arc(0, ts * .56, ts * .07, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  } else if (it.type === 'candle') {
+    ctx.fillStyle = '#efe3c4'; ctx.fillRect(x + ts * .38, y + ts * .42, ts * .24, ts * .42);
+    ctx.fillStyle = '#5a4630'; ctx.fillRect(x + ts * .3, y + ts * .82, ts * .4, ts * .06);
+    if (it.lit) {
+      const f = Math.sin(now / 90 + it.y) * .04;
+      ctx.fillStyle = '#f2a541'; ctx.beginPath(); ctx.ellipse(x + ts * .5, y + ts * (.31 + f), ts * .07, ts * .13, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff2c8'; ctx.beginPath(); ctx.ellipse(x + ts * .5, y + ts * (.34 + f), ts * .03, ts * .06, 0, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.strokeStyle = 'rgba(200,200,200,.35)'; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i < 6; i++) { const yy = y + ts * (.4 - i * .06); const xx = x + ts * .5 + Math.sin(now / 400 + i) * ts * .05; i ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+      ctx.stroke();
+    }
+  }
+}
+function drawGirl(g, inBed, now) {
+  const ts = TS, x = (g.cx + .5) * ts, y = (g.cy + .5) * ts;
+  const breath = Math.sin(now / 900) * .5 + .5;
+  if (inBed) {
+    ctx.fillStyle = '#e4d6b4'; ctx.beginPath(); ctx.arc(x, y - ts * .2, ts * .12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a2a1e'; ctx.beginPath(); ctx.arc(x, y - ts * .24, ts * .13, Math.PI, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8a6f4d'; roundRect(x - ts * .38, y - ts * .08, ts * .76, ts * (.46 + breath * .03), 4); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.moveTo(x - ts * .3, y + ts * .1); ctx.lineTo(x + ts * .3, y + ts * .1); ctx.stroke();
+  } else {
+    ctx.fillStyle = '#d9cfb5'; ctx.beginPath(); ctx.moveTo(x - ts * .18, y + ts * .38); ctx.lineTo(x, y - ts * .1); ctx.lineTo(x + ts * .18, y + ts * .38); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e4d6b4'; ctx.beginPath(); ctx.arc(x, y - ts * .18, ts * .11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a2a1e'; ctx.beginPath(); ctx.arc(x, y - ts * .22, ts * .12, Math.PI, Math.PI * 2); ctx.fill();
+  }
+}
+function drawGhost(a, now) {
+  const ts = TS, bob = Math.sin(now / 420 + a.id.length) * ts * .04;
+  const x = (a.cx + .5) * ts, y = (a.cy + .5) * ts + bob;
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, ts * .7); glow.addColorStop(0, 'rgba(127,209,199,.35)'); glow.addColorStop(1, 'rgba(127,209,199,0)');
+  ctx.fillStyle = glow; ctx.fillRect(x - ts, y - ts, ts * 2, ts * 2);
+  if (a.kind === 'wisp') {
+    ctx.fillStyle = 'rgba(160,230,220,.9)';
+    ctx.beginPath(); ctx.moveTo(x, y - ts * .38);
+    ctx.bezierCurveTo(x + ts * .3, y - ts * .2, x + ts * .3, y + ts * .15, x + ts * .24, y + ts * .3);
+    for (let i = 0; i < 4; i++) { const xx = x + ts * (.24 - i * .16), w = Math.sin(now / 160 + i) * ts * .04; ctx.quadraticCurveTo(xx - ts * .04, y + ts * (.38 + (i & 1 ? -.06 : .04)) + w, xx - ts * .12, y + ts * .3); }
+    ctx.bezierCurveTo(x - ts * .3, y + ts * .15, x - ts * .3, y - ts * .2, x, y - ts * .38); ctx.fill();
+    eyes(x, y - ts * .06, '#0d0b0a');
+  } else if (a.kind === 'shade') {
+    ctx.fillStyle = '#060505'; ctx.strokeStyle = 'rgba(127,209,199,.8)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x - ts * .24, y + ts * .4); ctx.lineTo(x - ts * .24, y - ts * .12); ctx.quadraticCurveTo(x, y - ts * .52, x + ts * .24, y - ts * .12); ctx.lineTo(x + ts * .24, y + ts * .4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    eyes(x, y - ts * .1, '#7fd1c7');
+  } else if (a.kind === 'snuffer') {
+    ctx.fillStyle = 'rgba(150,175,170,.88)';
+    ctx.beginPath(); ctx.ellipse(x, y + ts * .1, ts * .24, ts * .26, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#b08a3c'; ctx.beginPath(); ctx.moveTo(x - ts * .2, y - ts * .08); ctx.lineTo(x, y - ts * .46); ctx.lineTo(x + ts * .2, y - ts * .08); ctx.closePath(); ctx.fill();
+    eyes(x, y + ts * .04, '#0d0b0a');
+  }
+}
+function eyes(x, y, c) { const ts = TS; ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x - ts * .08, y, ts * .035, ts * .05, 0, 0, Math.PI * 2); ctx.ellipse(x + ts * .08, y, ts * .035, ts * .05, 0, 0, Math.PI * 2); ctx.fill(); }
+
+// ---------- ink threads and ash (overlay) ----------
+const threads = [], ash = [];
+function actorScreen(id) {
+  const a = disp.actors.find((q) => q.id === id); const r = room.getBoundingClientRect();
+  if (view3d) { const p = P(a.tx + .5, a.ty + .6, .45); return { x: r.left + p.X, y: r.top + p.Y }; }
+  return { x: r.left + (a.tx + .5) * TS, y: r.top + (a.ty + .5) * TS };
+}
+function lineEl(actor, idx) { return document.querySelector(`.line[data-actor="${actor}"][data-idx="${idx}"]`); }
+function spawnThread(actor, idx, color) {
+  if (reduce) return; const el = lineEl(actor, idx); if (!el) return;
+  const r = el.getBoundingClientRect(); const to = actorScreen(actor);
+  const from = { x: r.left + 10, y: r.top + r.height / 2 };
+  threads.push({ from, to, t0: performance.now(), dur: fast ? 380 : 700, color });
+}
+function spawnAsh(el) {
+  if (reduce) return; const r = el.getBoundingClientRect();
+  for (let i = 0; i < 26; i++) ash.push({ x: r.left + Math.random() * r.width, y: r.top + Math.random() * r.height, vx: (Math.random() - .3) * .6, vy: -.4 - Math.random() * 1.2, life: 1, hot: Math.random() < .5 });
+}
+function drawFx(now) {
+  fctx.setTransform(DPR, 0, 0, DPR, 0, 0); fctx.clearRect(0, 0, fx.width, fx.height);
+  for (let i = threads.length - 1; i >= 0; i--) {
+    const t = threads[i], k = (now - t.t0) / t.dur; if (k > 1.25) { threads.splice(i, 1); continue; }
+    const p = Math.min(1, k);
+    const cx = (t.from.x + t.to.x) / 2, cy = Math.min(t.from.y, t.to.y) - 60;
+    fctx.strokeStyle = t.color; fctx.globalAlpha = k > 1 ? Math.max(0, 1 - (k - 1) * 4) : .9; fctx.lineWidth = 1.6;
+    fctx.beginPath();
+    const steps = 40; for (let s = 0; s <= steps * p; s++) {
+      const u = s / steps; const x = (1 - u) * (1 - u) * t.from.x + 2 * (1 - u) * u * cx + u * u * t.to.x; const y = (1 - u) * (1 - u) * t.from.y + 2 * (1 - u) * u * cy + u * u * t.to.y + Math.sin(u * 18 + now / 80) * 2;
+      s ? fctx.lineTo(x, y) : fctx.moveTo(x, y);
+    }
+    fctx.stroke();
+    for (let j = 0; j < 6; j++) { const u = Math.max(0, p - j * .04); const x = (1 - u) * (1 - u) * t.from.x + 2 * (1 - u) * u * cx + u * u * t.to.x; const y = (1 - u) * (1 - u) * t.from.y + 2 * (1 - u) * u * cy + u * u * t.to.y; fctx.fillStyle = t.color; fctx.beginPath(); fctx.arc(x, y, 2.4 - j * .3, 0, Math.PI * 2); fctx.fill(); }
+    fctx.globalAlpha = 1;
+  }
+  for (let i = ash.length - 1; i >= 0; i--) {
+    const a = ash[i]; a.x += a.vx; a.y += a.vy; a.vy *= .985; a.life -= .012; if (a.life <= 0) { ash.splice(i, 1); continue; }
+    fctx.fillStyle = a.hot ? `rgba(249,115,22,${a.life})` : `rgba(60,50,40,${a.life})`; fctx.fillRect(a.x, a.y, 2, 2);
+  }
+}
+
+// ---------- the night ----------
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+function startNight() {
+  const L = level();
+  sim = HK.init(L, plan.placement, insertsFromPlan(L, plan));
+  phase = 'run'; sel = null; lineState = {};
+  syncDisplay(sim, true); renderAll();
+}
+async function doTick() {
+  if (!sim || sim.status !== 'night') return;
+  busy = true; renderControls();
+  const tr = HK.tick(sim);
+  bell(tr.tick === 12 ? 1.2 : 1);
+  if (tr.events.length) { quill(); camFocus = { id: tr.events[0].actor, until: performance.now() + (fast ? 900 : 1600) }; }
+  // positions
+  const now = performance.now();
+  lineState = {};
+  for (const t of tr.turns) {
+    const a = disp.actors.find((q) => q.id === t.actor);
+    a.fx = a.cx; a.fy = a.cy; a.tx = t.to.x; a.ty = t.to.y; a.x = t.to.x; a.y = t.to.y; a.t0 = now; a.line = t.fired >= 0 ? t.fired : null;
+    const st = {};
+    t.evals.forEach((ok, i) => { st[i] = ok ? 'lit' : 'false'; });
+    for (let i = t.fired + 1; i < sim.actors.find((q) => q.id === t.actor).rules.length; i++) st[i] = t.shadowedTrue.includes(i) ? 'shadowed' : 'idle';
+    lineState[t.actor] = st;
+  }
+  disp.items = sim.items.map((i) => ({ ...i }));
+  renderBook(); renderPips();
+  if (tr.events.length) for (const ev of tr.events) { const el = lineEl(ev.actor, ev.at); if (el) el.classList.add('bleed'); }
+  for (const t of tr.turns) if (t.fired >= 0) spawnThread(t.actor, t.fired, t.actor === 'girl' ? 'rgba(232,217,181,.9)' : 'rgba(127,209,199,.95)');
+  await wait(tickDur() + (fast ? 40 : 160));
+  busy = false;
+  if (sim.status === 'lost') return lose(tr);
+  if (sim.status === 'won') return win();
+  renderControls();
+}
+async function playRest() {
+  if (phase === 'plan') startNight();
+  auto = true; renderControls();
+  while (sim && sim.status === 'night' && auto) { await doTick(); }
+  auto = false; renderControls();
+}
+async function stepOne() { if (phase === 'plan') startNight(); if (!busy) await doTick(); }
+
+function lose(tr) {
+  phase = 'lost'; auto = false; disp.caught = performance.now(); thud(); shakeT = reduce ? 0 : 1;
+  $('#vignette').classList.add('on');
+  const girlEl = document.querySelector('.spec[data-actor="girl"] .line');
+  if (girlEl) girlEl.classList.add('struck');
+  const c = tr.caught, L = level();
+  const by = sim.actors.find((a) => a.id === c.by);
+  const lines = [];
+  if (c.actorTurn === 'girl') {
+    const r = sim.actors[0].rules[c.line];
+    lines.push(`Bell ${tr.tick}. The girl walked straight into ${dname(by.id).toLowerCase() === 'girl' ? 'it' : 'the ' + dname(by.id)} while following line ${c.line + 1}: “${HK.ruleText(r, 'girl')}”`);
+  } else {
+    lines.push(`Bell ${tr.tick}. ${dname(by.id)} reached the girl. It was running line ${c.line + 1}: “${HK.ruleText(c.rule, by.kind)}”`);
+  }
+  const stats = HK.ruleStats(sim);
+  let cardNotes = 0;
+  for (const a of sim.actors) a.rules.forEach((r, i) => {
+    if (r.src !== 'card') return; const st = stats[a.id][i];
+    if (st.fired > 0) return; cardNotes++;
+    if (st.shadowedBy != null) lines.push(`Your card on line ${i + 1} of the ${dname(a.id)} spec was true but never ran. Line ${st.shadowedBy + 1} above it was true first, so it was shadowed.`);
+    else lines.push(`Your card on line ${i + 1} of the ${dname(a.id)} spec never became true: “${HK.COND_TEXT[r.cond](r.n)}” did not happen.`);
+  });
+  lastLoss = { shadowed: [] };
+  for (const a of sim.actors) a.rules.forEach((r, i) => { if (r.src === 'card' && stats[a.id][i].fired === 0 && stats[a.id][i].shadowedBy != null) lastLoss.shadowed.push(r.cardId); });
+  if ((L.cards || []).length && usedCards(plan).size < L.cards.length && !cardNotes) lines.push('A spell card is still in your hand.');
+  for (const ev of L.events || []) if (tr.tick >= ev.tick) lines.push(`At bell ${ev.tick} ${dname(ev.actor)} wrote a new line ${ev.at + 1}. Every line under it now waits its turn.`);
+  const v = $('#verdict'); v.className = 'verdict lost';
+  v.innerHTML = `<p class="head">She is gone.</p>${lines.map((l) => `<p>${l}</p>`).join('')}<p class="stat">Adjust the board and ring again.</p>`;
+  renderAll();
+}
+async function win() {
+  phase = 'won'; auto = false; birds();
+  const L = level(); done[L.id] = 1; try { localStorage.setItem('mw-done', JSON.stringify(done)); } catch (e) {}
+  // dawn burn: lines that never fired burn away, lines that worked turn gold
+  const stats = HK.ruleStats(sim);
+  lineState = {}; renderBook(); renderPips(); renderControls(); renderNights(); guide();
+  const start = performance.now();
+  (function sweep() { disp.dawn = Math.min(1, (performance.now() - start) / 1800); if (disp.dawn < 1) requestAnimationFrame(sweep); })();
+  let delay = 0, burned = 0;
+  for (const a of sim.actors) a.rules.forEach((r, i) => {
+    const el = lineEl(a.id, i); if (!el) return;
+    if (stats[a.id][i].fired > 0) { setTimeout(() => el.classList.add('gold'), 300 + delay); }
+    else { burned++; setTimeout(() => { el.classList.add('burn'); spawnAsh(el); noiseBurst(.4, 900, .7, .12); }, 300 + delay); }
+    delay += 120;
+  });
+  const res = HK.solve(L);
+  const used = plan.placement.length + usedCards(plan).size;
+  const total = Object.values(L.items).reduce((a, b) => a + b, 0) + (L.cards || []).length;
+  const v = $('#verdict'); v.className = 'verdict won';
+  v.innerHTML = `<p class="head">Dawn. She is still asleep.</p>
+    <p>${burned ? `${burned} line${burned > 1 ? 's' : ''} never fired all night and burned away. A rule that can never run is a bug in any spec.` : 'Every line fired at least once tonight.'}</p>
+    <p class="stat">${res.wins} of ${res.total} possible setups survive this night (${(res.wins / res.total * 100).toFixed(1)}%). Yours is one of them. Pieces used: ${used} of ${total}.</p>`;
+  const next = li + 1 < LV.length ? li + 1 : null;
+  if (next != null) { const b = document.createElement('button'); b.className = 'btn primary'; b.textContent = `Go to ${LV[next].name}`; b.onclick = () => loadLevel(next); b.style.justifySelf = 'start'; v.appendChild(b); }
+}
+
+// ---------- verify (the hook, in miniature) ----------
+$('#verify').onclick = async () => {
+  const term = $('#term'); term.textContent = '$ npm run verify\n';
+  for (const L of LV) {
+    await wait(30);
+    const t = performance.now(); const r = HK.solve(L); const empty = HK.run(L, [], []).status === 'lost';
+    const ok = r.wins > 0 && empty;
+    term.textContent += `${ok ? '✓' : '✗'} ${L.name.padEnd(10)} ${String(r.wins).padStart(3)}/${String(r.total).padEnd(5)} solvable (${(r.wins / r.total * 100).toFixed(1)}%)  empty board ${empty ? 'loses' : 'SURVIVES'}  ${Math.round(performance.now() - t)}ms\n`;
+  }
+  term.textContent += '\nAll nights verified.';
+};
+
+// ---------- wiring ----------
+$('#play').onclick = () => { audioKick(); playRest(); };
+$('#step').onclick = () => { audioKick(); auto = false; stepOne(); };
+$('#reset').onclick = () => backToPlan();
+$('#clear').onclick = () => { plan = freshPlan(level()); sel = null; refreshPreview(); renderAll(); };
+$('#fast').onclick = () => { fast = !fast; $('#fast').textContent = fast ? 'Speed ×2' : 'Speed ×1'; $('#fast').setAttribute('aria-pressed', String(fast)); };
+$('#sound').onclick = () => setSound(!soundOn);
+function setView(v) {
+  view3d = v; $('#view').textContent = v ? 'View 2.5D' : 'View 2D'; $('#view').setAttribute('aria-pressed', String(v));
+  try { localStorage.setItem('mw-view', v ? '3d' : '2d'); } catch (e) { /* ignore */ }
+  if (v) { cam.th = 1.5; cam.D = baseD(mapOf(level())) * 1.15; }
+  resize();
+}
+$('#view').onclick = () => setView(!view3d);
+$('#tut').onclick = () => setGuide(!guideOn);
+setView(view3d);
+let kicked = false;
+function audioKick() { if (!kicked) { kicked = true; setSound(true); } }
+
+function start(data) {
+  if (data && typeof data.li === 'number' && LV[data.li]) { loadLevel(data.li); if (data.plan) { plan = data.plan; refreshPreview(); renderAll(); } }
+  else loadLevel(0);
+  requestAnimationFrame(draw);
+}
+window.claude?.hot?.snapshot?.(() => ({ li, plan }));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body></html>

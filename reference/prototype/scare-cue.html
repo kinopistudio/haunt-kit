@@ -1,0 +1,657 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>Scare Cue</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Scare Cue: the same spec book as Midnight Ward, next to a CCTV monitor of a home haunter's garage. */
+:root {
+  --ink: #0b0c0b; --ink-2: #141614; --line: #2a2f2a;
+  --parch: #e8d9b5; --parch-dim: #b7a782; --parch-ink: #2a2118;
+  --amber: #f2a541; --phos: #8cf0a8; --phos-dim: #3f7a52; --alarm: #ff5a4e; --gold: #e8b85a; --mold: #7d8f5a;
+  --font-rule: "IM Fell English", "Iowan Old Style", Palatino, "Songti TC", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: auto; }
+body { background: var(--ink); color: var(--parch); font-family: var(--font-rule); font-size: 16px; margin: 0;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); -webkit-tap-highlight-color: transparent; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 14px; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+h1 { font-weight: 400; font-size: clamp(28px, 5vw, 40px); margin: 0; }
+h1 small { font-size: .45em; color: var(--parch-dim); font-style: italic; margin-left: .4em; }
+.kitlink { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--parch-dim); }
+.kitlink a { color: var(--amber); }
+.btn { font: inherit; color: var(--parch); background: var(--ink-2); border: 1px solid #3a3f3a; border-radius: 3px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
+.btn.primary { background: var(--phos); color: #06210f; border-color: var(--phos); font-weight: 600; }
+.btn:disabled { opacity: .4; cursor: default; }
+button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.lesson { border-left: 2px solid var(--phos); padding: 4px 0 4px 12px; display: grid; gap: 2px; }
+.lesson .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--phos); }
+.lesson .en { font-size: 17px; } .lesson .zh { color: var(--parch-dim); font-size: 14px; }
+.stage { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px; align-items: start; }
+.left { display: grid; gap: 10px; min-width: 0; }
+@media (max-width: 860px) {
+  .stage { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .left { display: contents; }
+  .monitor { order: 1; } .controls { order: 2; } .verdict { order: 3; } .report { order: 4; } .tray { order: 5; } .book { order: 6; }
+}
+.monitor { position: relative; border: 10px solid #1b1d1b; border-radius: 14px; background: #020302; box-shadow: inset 0 0 0 1px #000, 0 10px 30px rgba(0,0,0,.6); }
+canvas#cam { display: block; width: 100%; height: auto; border-radius: 6px; }
+.tray { display: flex; flex-wrap: wrap; gap: 8px; }
+.card { font-family: var(--font-rule); text-align: left; background: var(--parch); color: var(--parch-ink); border: 1px solid #8f7d58; border-radius: 2px; padding: 8px 10px; font-size: 14px; line-height: 1.3; max-width: 300px; cursor: pointer; box-shadow: 0 2px 0 #6b5a3e; }
+.card .tag { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #7a5a2a; margin-bottom: 2px; }
+.card[aria-pressed="true"] { outline: 2px solid var(--amber); outline-offset: 2px; }
+.card.used { opacity: .35; cursor: default; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.verdict { display: grid; gap: 6px; font-size: 16px; line-height: 1.5; }
+.verdict p { margin: 0; }
+.verdict .head { font-size: 22px; }
+.verdict.bad .head { color: var(--alarm); } .verdict.good .head { color: var(--phos); }
+.verdict .stat { font-family: var(--font-mono); font-size: 13px; color: var(--parch-dim); }
+.coach { border: 1px solid var(--phos); background: #0c1a10; border-radius: 4px; padding: 10px 12px; display: grid; gap: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+.coach[hidden] { display: none; }
+.coach .row { display: flex; align-items: baseline; gap: 10px; }
+.coach .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--phos); }
+.coach .skip { margin-left: auto; font-family: var(--font-mono); font-size: 11px; background: none; border: 0; color: var(--parch-dim); cursor: pointer; text-decoration: underline; padding: 4px; }
+.coach .en { font-size: 17px; line-height: 1.35; }
+.coach .zh { font-size: 14px; color: var(--parch-dim); }
+.coach.done { border-color: var(--gold); } .coach.done .tag { color: var(--gold); }
+.pulse { outline: 2px solid var(--phos) !important; outline-offset: 3px; animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 50% { outline-color: rgba(140,240,168,.15); } }
+@media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+@media (max-width: 860px) {
+  .coach { position: fixed; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); bottom: max(8px, env(safe-area-inset-bottom, 0px)); z-index: 30; }
+  body.coached { padding-bottom: 170px; }
+}
+.report { display: none; gap: 6px; }
+.report.on { display: grid; }
+.report pre { margin: 0; background: #050605; border: 1px solid var(--line); color: var(--phos); font-family: var(--font-mono); font-size: 12.5px; padding: 10px 12px; white-space: pre-wrap; }
+/* spec book (same component as Midnight Ward) */
+.book { display: grid; gap: 12px; min-width: 0; }
+.spec { position: relative; background: var(--parch); color: var(--parch-ink); padding: 12px 14px 10px; border-radius: 2px;
+  box-shadow: 0 1px 0 #6b5a3e, 0 8px 24px rgba(0,0,0,.45);
+  background-image: radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.18), transparent 60%), radial-gradient(90% 70% at 100% 100%, rgba(120,80,30,.22), transparent 70%); }
+.spec.safety { background: #dfe8d6; background-image: none; }
+.spec h3 { margin: 0 0 6px; font-family: var(--font-mono); font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #6d5636; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.spec h3 .who { font-family: var(--font-rule); font-size: 20px; letter-spacing: 0; text-transform: none; color: var(--parch-ink); }
+.spec h3 .path { margin-left: auto; }
+.spec ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.line { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 6px; align-items: start; padding: 4px; border-radius: 2px; font-size: 16px; line-height: 1.32; transition: background .3s, color .3s, opacity .3s; }
+.line .ln { font-family: var(--font-mono); font-size: 11px; color: #8a7350; padding-top: 3px; text-align: right; }
+.line .mark { font-family: var(--font-mono); font-size: 12px; padding-top: 2px; min-width: 14px; text-align: center; }
+.line.card-line { background: rgba(242,165,65,.18); box-shadow: inset 2px 0 0 #b07020; }
+.line .rm { border: 0; background: none; color: #7a4a2a; cursor: pointer; font: inherit; font-size: 14px; padding: 0 4px; }
+.line.lit { background: rgba(20,30,22,.9); color: var(--phos); } .line.lit .ln, .line.lit .mark { color: var(--phos); }
+.line.false { opacity: .55; } .line.false .txt { text-decoration: line-through; text-decoration-color: rgba(42,33,24,.35); }
+.line.shadowed { color: #4f5a36; background: rgba(125,143,90,.25); }
+.line.idle { opacity: .5; }
+.line.blame { background: #3a0f0b; color: #ffb3ab; box-shadow: inset 3px 0 0 var(--alarm); } .line.blame .ln, .line.blame .mark { color: #ffb3ab; }
+.pill { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 1px 6px; border-radius: 10px; border: 1px solid currentColor; white-space: nowrap; align-self: center; }
+.pill.ok { color: #2f6b3f; } .pill.bad { color: #b3261b; } .pill.wait { color: #8a7350; }
+.slot { display: block; width: 100%; border: 1px dashed #a0703a; background: rgba(242,165,65,.12); color: #7a4a10; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px; cursor: pointer; border-radius: 2px; }
+.slot:hover { background: rgba(242,165,65,.3); }
+.note { font-family: var(--font-mono); font-size: 10.5px; color: #7d6544; margin-top: 6px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Scare Cue <small>a Haunt Kit tool for home haunters</small></h1>
+    <button class="btn" id="sound" aria-pressed="false">Sound off</button>
+    <button class="btn" id="tut" aria-pressed="true">Tutorial on</button>
+    <span class="kitlink">Same rule engine and spec book as <a href="https://claude.ai/artifact/AiiakVVH1aEgcHME3jMpoL" target="_blank" rel="noopener">Midnight Ward</a></span>
+  </header>
+  <div class="lesson">
+    <span class="tag">Garage haunt · opening night</span>
+    <span class="en">Guests arrive at eight. Two props are unsafe. Run the check, watch the footage, then fix their specs with the cards.</span>
+    <span class="zh">八點開放參觀。有兩個機關不安全。先跑安全檢查、看監視器重播，再用卡片修好它們的規格。</span>
+  </div>
+  <div class="stage">
+    <div class="left">
+      <div class="coach" id="coach" aria-live="polite" hidden></div>
+      <div class="monitor"><canvas id="cam" width="900" height="700" aria-label="CCTV view of the garage haunt"></canvas></div>
+      <div class="tray" id="tray"></div>
+      <div class="controls">
+        <button class="btn primary" id="run">Run safety check</button>
+        <button class="btn" id="again" disabled>Replay footage</button>
+        <button class="btn" id="clear">Remove cards</button>
+      </div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="report" id="report">
+        <pre id="reportText"></pre>
+        <div><button class="btn" id="copy">Copy report</button></div>
+      </div>
+    </div>
+    <section class="book" id="book" aria-label="Spec book"></section>
+  </div>
+</div>
+
+<script>
+// Scare Cue prototype engine: same rule semantics as Midnight Ward (top-down, first true rule fires),
+// but the visitor is nondeterministic and the checker searches every visitor path for a safety violation.
+(function (root) {
+  const TICKS = 12, NEAR = 2, ADJ = 1;
+  const MAP = [
+    '#########',
+    '#V..J...#',
+    '#.......#',
+    '#.#####.#',
+    '#.......#',
+    '####F#E##',
+    '#########',
+  ];
+  const R = (kw, cond, act) => ({ kw, cond, act });
+  const PROPS = [
+    { id: 'jump', kind: 'jump', name: 'Jump-scare', path: '.kiro/specs/prop-jump-scare', rules: [R('WHEN', 'visitor_near', 'trigger')] },
+    { id: 'fog', kind: 'fog', name: 'Fog machine', path: '.kiro/specs/prop-fog', rules: [R('WHEN', 'visitor_near', 'spray'), R('', 'always', 'stop')] },
+    { id: 'light', kind: 'light', name: 'Exit light', path: '.kiro/specs/prop-exit-light', rules: [R('WHEN', 'fog_on', 'light_off'), R('', 'always', 'light_on')] },
+  ];
+  const CARDS = [
+    { actor: 'light', rule: R('IF', 'fog_on', 'light_on'), tag: 'Fix for the exit light' },
+    { actor: 'jump', rule: R('IF', 'visitor_adjacent', 'stay'), tag: 'Fix for the jump-scare' },
+    { actor: 'fog', rule: R('IF', 'light_off', 'stop'), tag: 'Fix for the fog machine' },
+  ];
+  const SAFETY = [
+    { id: 'S1', text: 'THE fog SHALL NOT be on while the exit light is off.', short: 'No fog in the dark' },
+    { id: 'S2', text: 'THE jump-scare SHALL NOT trigger while a visitor is adjacent.', short: 'No scare within reach' },
+  ];
+  const WHO = { jump: 'THE jump-scare', fog: 'THE fog machine', light: 'THE exit light' };
+  const COND = { always: '', visitor_near: 'a visitor is near', visitor_adjacent: 'a visitor is adjacent', fog_on: 'the fog is on', light_off: 'the exit light is off' };
+  const ACT = { trigger: 'trigger', stay: 'stay still', spray: 'spray fog', stop: 'stop the fog', light_off: 'turn off', light_on: 'stay on' };
+  function ruleText(r, kind) {
+    const w = WHO[kind], a = 'SHALL ' + ACT[r.act];
+    if (r.cond === 'always') return `${w} ${a}.`;
+    if (r.kw === 'IF') return `IF ${COND[r.cond]}, THEN ${w} ${a}.`;
+    return `WHEN ${COND[r.cond]}, ${w} ${a}.`;
+  }
+
+  function parse() {
+    const h = MAP.length, w = MAP[0].length, walk = new Set(), pos = {};
+    let start = null, exit = null;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const c = MAP[y][x];
+      if (c === '.' || c === 'V' || c === 'E') walk.add(y * w + x);
+      if (c === 'V') start = { x, y };
+      if (c === 'E') exit = { x, y };
+      if (c === 'J') pos.jump = { x, y };
+      if (c === 'F') pos.fog = { x, y };
+    }
+    pos.light = exit;
+    return { w, h, walk, start, exit, pos };
+  }
+  const M = parse();
+  const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  function moves(v) {
+    const out = [{ x: v.x, y: v.y }];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const x = v.x + dx, y = v.y + dy;
+      if (M.walk.has(y * M.w + x)) out.push({ x, y });
+    }
+    return out;
+  }
+  // specs: { jump: [rules], fog: [rules], light: [rules] } (cards already inserted)
+  function holds(st, id, r) {
+    const d = dist(st.v, M.pos[id]);
+    switch (r.cond) {
+      case 'always': return true;
+      case 'visitor_near': return d <= NEAR;
+      case 'visitor_adjacent': return d <= ADJ;
+      case 'fog_on': return st.fog;
+      case 'light_off': return !st.light;
+    }
+    return false;
+  }
+  // Advance one tick after the visitor has moved to `to`. Returns { st, turns, violation, scared }.
+  function step(st0, to, specs) {
+    const st = { v: to, fog: st0.fog, light: st0.light, tick: st0.tick + 1 };
+    const turns = []; let violation = null, scared = false;
+    for (const p of PROPS) {
+      const rules = specs[p.id], evals = []; let fired = -1;
+      for (let i = 0; i < rules.length; i++) { const ok = holds(st, p.id, rules[i]); evals.push(ok); if (ok) { fired = i; break; } }
+      const shadowed = [];
+      for (let i = fired + 1; fired >= 0 && i < rules.length; i++) if (holds(st, p.id, rules[i])) shadowed.push(i);
+      const r = fired >= 0 ? rules[fired] : null;
+      let triggered = false;
+      if (r) switch (r.act) {
+        case 'trigger': triggered = true; if (dist(st.v, M.pos.jump) <= NEAR) scared = true; break;
+        case 'spray': st.fog = true; break;
+        case 'stop': st.fog = false; break;
+        case 'light_off': st.light = false; break;
+        case 'light_on': st.light = true; break;
+      }
+      turns.push({ id: p.id, evals, fired, shadowed });
+      if (!violation && p.id === 'jump' && triggered && dist(st.v, M.pos.jump) <= ADJ) violation = { prop: 'S2', by: 'jump', line: fired };
+      if (!violation && st.fog && !st.light) violation = { prop: 'S1', by: p.id, line: fired };
+      if (violation) break;
+    }
+    return { st, turns, violation, scared };
+  }
+  const key = (s) => `${s.v.x},${s.v.y},${+s.fog},${+s.light}`;
+  // Exhaustive check: BFS over (tick, visitor position, prop state). Shortest counterexample per property,
+  // plus the number of distinct visitor paths covered and how many of them still get a scare.
+  function check(specs) {
+    const init = { v: M.start, fog: false, light: true, tick: 0 };
+    let layer = new Map([[key(init) + ',0', { st: init, paths: 1, scaredPaths: 0, trail: [] }]]);
+    const found = {}; let total = 0, scaredTotal = 0;
+    for (let t = 1; t <= TICKS; t++) {
+      const next = new Map();
+      for (const node of layer.values()) {
+        for (const to of moves(node.st.v)) {
+          const r = step(node.st, to, specs);
+          const trail = node.trail.concat([to]);
+          if (r.violation) {
+            if (!found[r.violation.prop]) found[r.violation.prop] = { tick: t, trail, ...r.violation };
+            continue;
+          }
+          const sc = r.scared;
+          const k = key(r.st) + ',' + (sc ? 1 : 0);
+          const prev = next.get(k);
+          const add = { paths: node.paths, scaredPaths: sc ? node.paths : node.scaredPaths };
+          if (prev) { prev.paths += add.paths; prev.scaredPaths += add.scaredPaths; }
+          else next.set(k, { st: r.st, paths: add.paths, scaredPaths: add.scaredPaths, trail });
+        }
+      }
+      // collapse the "scared this tick" flag; scaredPaths already accumulates paths scared at least once
+      layer = new Map();
+      for (const [k, n] of next) {
+        const k2 = k.slice(0, k.lastIndexOf(','));
+        const p = layer.get(k2);
+        if (p) { p.paths += n.paths; p.scaredPaths += n.scaredPaths; } else layer.set(k2, { ...n });
+      }
+    }
+    for (const n of layer.values()) { total += n.paths; scaredTotal += n.scaredPaths; }
+    return { found, safePaths: total, scaredPaths: scaredTotal };
+  }
+  // Replay one visitor trail with full traces, for the CCTV view.
+  function replay(specs, trail) {
+    let st = { v: M.start, fog: false, light: true, tick: 0 };
+    const frames = [{ st, turns: [], violation: null }];
+    for (const to of trail) {
+      const r = step(st, to, specs); st = r.st; frames.push({ st, turns: r.turns, violation: r.violation, scared: r.scared });
+      if (r.violation) break;
+    }
+    return frames;
+  }
+  root.SC = { TICKS, NEAR, ADJ, MAP, M, PROPS, CARDS, SAFETY, ruleText, check, replay, dist, moves };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(() => {
+'use strict';
+const S = window.SC, M = S.M;
+const $ = (q) => document.querySelector(q);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cam = $('#cam'), ctx = cam.getContext('2d');
+
+let inserts = [];        // [{ card, at }]
+let sel = null;          // card index
+let phase = 'plan';      // plan | checking | replay | done
+let result = null, frames = null, fi = 0, frameT = 0, playing = false, flood = null, lineState = {}, status = {};
+let replayInfo = null;
+
+function specs() {
+  const s = Object.fromEntries(S.PROPS.map((p) => [p.id, p.rules.map((r) => ({ ...r, src: 'base' }))]));
+  const sorted = inserts.slice().sort((a, b) => a.at - b.at);
+  for (const ins of sorted) { const c = S.CARDS[ins.card]; s[c.actor].splice(Math.min(ins.at, s[c.actor].length), 0, { ...c.rule, src: 'card', card: ins.card }); }
+  return s;
+}
+
+// ---------- audio ----------
+let ac = null, master = null, hum = null, soundOn = false;
+function audio() { if (ac) return ac; try { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = 0; master.connect(ac.destination); } catch (e) { ac = null; } return ac; }
+function setSound(on) {
+  soundOn = on; const a = audio(); if (!a) return; if (a.state === 'suspended') a.resume();
+  master.gain.setTargetAtTime(on ? .8 : 0, a.currentTime, .1);
+  $('#sound').textContent = on ? 'Sound on' : 'Sound off'; $('#sound').setAttribute('aria-pressed', String(on));
+  if (on && !hum) { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 60; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 160; const g = ac.createGain(); g.gain.value = .02; o.connect(f); f.connect(g); g.connect(master); o.start(); hum = g; }
+}
+function beep(hz, dur, vol = .15, type = 'square') {
+  if (!soundOn || !ac) return; const t = ac.currentTime; const o = ac.createOscillator(); o.type = type; o.frequency.value = hz;
+  const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .02);
+}
+function hiss(dur, vol) {
+  if (!soundOn || !ac) return; const len = Math.floor(ac.sampleRate * dur), b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const s = ac.createBufferSource(); s.buffer = b; const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 900; const g = ac.createGain(); g.gain.value = vol; s.connect(f); f.connect(g); g.connect(master); s.start();
+}
+function sting() { beep(880, .25, .12, 'sawtooth'); setTimeout(() => beep(1245, .3, .1, 'sawtooth'), 40); hiss(.25, .2); }
+function alarm() { [0, 260, 520].forEach((d) => setTimeout(() => beep(660, .18, .18), d)); hiss(.9, .35); }
+function tickSound() { beep(1800, .03, .05, 'sine'); }
+$('#sound').onclick = () => setSound(!soundOn);
+
+// ---------- spec book ----------
+function renderBook() {
+  const book = $('#book'), sp = specs(); book.innerHTML = '';
+  // safety spec
+  let h = `<article class="spec safety"><h3><span class="who">Safety</span><span class="path">requirements · safety</span></h3><ol>`;
+  for (const p of S.SAFETY) {
+    const st = status[p.id] || 'wait';
+    h += `<li class="line"><span class="ln">${p.id}</span><span class="txt">${p.text}</span><span class="pill ${st}">${st === 'ok' ? 'holds' : st === 'bad' ? 'violated' : 'unchecked'}</span></li>`;
+  }
+  h += `</ol><div class="note">checked after every prop acts, on every visitor path, for ${S.TICKS} bells</div></article>`;
+  h += `<article class="spec"><h3><span class="who">Visitor</span><span class="path">requirements · visitor</span></h3><ol><li class="line"><span class="ln">1</span><span class="txt">THE visitor MAY walk anywhere, or stand still, at every bell.</span><span></span></li></ol><div class="note">guests never follow the route you planned · the checker tries every path</div></article>`;
+  for (const p of S.PROPS) {
+    const cardSel = phase === 'plan' && sel != null && S.CARDS[sel].actor === p.id;
+    h += `<article class="spec" data-actor="${p.id}"><h3><span class="who">${p.name}</span><span class="path">${p.path}</span></h3><ol>`;
+    sp[p.id].forEach((r, i) => {
+      if (cardSel) h += `<li><button class="slot" data-actor="${p.id}" data-at="${i}">Insert at line ${i + 1}</button></li>`;
+      const cls = ['line']; if (r.src === 'card') cls.push('card-line');
+      const st = (lineState[p.id] || {})[i]; if (st) cls.push(st);
+      const mark = st === 'lit' || st === 'lit blame' ? '✓' : st === 'false' ? '✗' : st === 'shadowed' ? '◐' : '';
+      const rm = (phase === 'plan' || phase === 'done') && r.src === 'card' ? `<button class="rm" data-card="${r.card}" aria-label="Remove card">×</button>` : `<span class="mark">${mark}</span>`;
+      h += `<li class="${cls.join(' ')}"><span class="ln">${i + 1}</span><span class="txt">${S.ruleText(r, p.kind)}</span>${rm}</li>`;
+    });
+    if (cardSel) h += `<li><button class="slot" data-actor="${p.id}" data-at="${sp[p.id].length}">Insert at line ${sp[p.id].length + 1}</button></li>`;
+    h += `</ol><div class="note">near = within ${S.NEAR} steps · adjacent = within ${S.ADJ}</div></article>`;
+  }
+  book.innerHTML = h;
+  book.querySelectorAll('.slot').forEach((b) => b.onclick = () => {
+    const at = +b.dataset.at, actor = b.dataset.actor;
+    for (const ins of inserts) if (S.CARDS[ins.card].actor === actor && ins.at >= at) ins.at++;
+    inserts.push({ card: sel, at }); sel = null; hiss(.12, .2); toPlan(); renderAll();
+  });
+  book.querySelectorAll('.rm').forEach((b) => b.onclick = () => {
+    const c = +b.dataset.card, ins = inserts.find((q) => q.card === c), actor = S.CARDS[c].actor;
+    inserts = inserts.filter((q) => q !== ins);
+    for (const q of inserts) if (S.CARDS[q.card].actor === actor && q.at > ins.at) q.at--;
+    toPlan(); renderAll();
+  });
+}
+function renderTray() {
+  const tray = $('#tray'); tray.innerHTML = '';
+  S.CARDS.forEach((c, i) => {
+    const used = inserts.some((q) => q.card === i);
+    const b = document.createElement('button'); b.className = 'card' + (used ? ' used' : ''); b.disabled = used || phase === 'checking';
+    b.setAttribute('aria-pressed', String(sel === i));
+    b.innerHTML = `<span class="tag">Spell card · ${used ? 'in a spec' : 'tap, then pick a line'}</span>${S.ruleText(c.rule, S.PROPS.find((p) => p.id === c.actor).kind)}`;
+    b.onclick = () => { sel = sel === i ? null : i; if (phase !== 'plan') toPlan(); renderAll(); };
+    tray.appendChild(b);
+  });
+}
+function renderControls() {
+  $('#run').disabled = phase === 'checking';
+  $('#again').disabled = !result || phase === 'checking';
+  $('#clear').disabled = !inserts.length || phase === 'checking';
+}
+function renderAll() { renderBook(); renderTray(); renderControls(); guide(); }
+function toPlan() {
+  phase = 'plan'; result = null; frames = null; playing = false; lineState = {}; status = {}; replayInfo = null;
+  $('#verdict').innerHTML = ''; $('#verdict').className = 'verdict'; $('#report').classList.remove('on');
+}
+
+// ---------- the check ----------
+const DEMO = [[1, 1], [2, 1], [2, 2], [1, 2], [1, 3], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [6, 5]].map(([x, y]) => ({ x, y }));
+function floodLayers() {
+  const layers = []; let cur = new Set([M.start.x + ',' + M.start.y]);
+  for (let t = 0; t <= S.TICKS; t++) {
+    layers.push([...cur].map((k) => k.split(',').map(Number)));
+    const nx = new Set(); for (const k of cur) { const [x, y] = k.split(',').map(Number); for (const m of S.moves({ x, y })) nx.add(m.x + ',' + m.y); } cur = nx;
+  }
+  return layers;
+}
+async function runCheck() {
+  sel = null; toPlan(); phase = 'checking'; renderAll();
+  const sp = specs();
+  flood = { t0: performance.now(), layers: floodLayers() };
+  beep(440, .08, .08, 'sine');
+  await new Promise((r) => setTimeout(r, reduce ? 0 : 1300));
+  const t0 = performance.now(); result = S.check(sp); result.ms = Math.round(performance.now() - t0);
+  flood = null;
+  const v = Object.values(result.found).sort((a, b) => a.tick - b.tick);
+  for (const p of S.SAFETY) status[p.id] = result.found[p.id] ? 'bad' : 'ok';
+  if (v.length) { replayInfo = { sp, v: v[0], all: v }; startReplay(sp, v[0].trail); }
+  else { replayInfo = { sp, v: null }; startReplay(sp, DEMO); showPass(sp); }
+  renderAll();
+}
+function startReplay(sp, trail) {
+  frames = S.replay(sp, trail); fi = 0; frameT = performance.now(); playing = true; phase = 'replay'; lineState = {};
+  $('#again').disabled = false;
+}
+$('#run').onclick = runCheck;
+$('#again').onclick = () => { if (replayInfo) { $('#verdict').innerHTML = replayInfo.v ? '' : $('#verdict').innerHTML; startReplay(replayInfo.sp, replayInfo.v ? replayInfo.v.trail : DEMO); renderAll(); } };
+$('#clear').onclick = () => { inserts = []; sel = null; toPlan(); renderAll(); };
+
+function advanceFrame() {
+  fi++; const f = frames[fi]; tickSound();
+  lineState = {};
+  for (const t of f.turns) {
+    const st = {}; t.evals.forEach((ok, i) => { st[i] = ok ? 'lit' : 'false'; });
+    const n = replayInfo.sp[t.id].length;
+    for (let i = t.fired + 1; i < n; i++) st[i] = t.shadowed.includes(i) ? 'shadowed' : 'idle';
+    lineState[t.id] = st;
+  }
+  if (f.scared && !f.violation) sting();
+  if (f.violation) {
+    lineState[f.violation.by] = { ...lineState[f.violation.by], [f.violation.line]: 'lit blame' };
+    alarm(); playing = false; phase = 'done'; showFail(f);
+  } else if (fi >= frames.length - 1) { playing = false; phase = 'done'; }
+  renderBook(); if (!playing) { renderControls(); guide(); }
+}
+
+function showFail(f) {
+  const v = f.violation, sp = replayInfo.sp, prop = S.PROPS.find((p) => p.id === v.by), rule = sp[v.by][v.line];
+  const sv = S.SAFETY.find((p) => p.id === v.prop);
+  let why = v.prop === 'S1'
+    ? 'The fog machine was still spraying, so the guest is standing in fog with no exit light.'
+    : 'The guest was one step away when the prop swung out.';
+  const turn = f.turns.find((t) => t.id === v.by);
+  const hints = [];
+  const shadowCard = turn && turn.shadowed.map((i) => sp[v.by][i]).find((r) => r.src === 'card');
+  if (shadowCard) hints.push(`Your card in this spec was true too, but it sits below line ${v.line + 1}, and only the first true line runs. Move it above.`);
+  if (v.prop === 'S1' && sp.fog.some((r) => r.src === 'card')) hints.push('Your card on the fog machine cannot help here: the fog machine acts before the exit light, so the fog is already on when the light goes out.');
+  const more = replayInfo.all.length > 1 ? `<p class="stat">Also violated: ${replayInfo.all.slice(1).map((q) => q.prop + ' at bell ' + q.tick).join(', ')}.</p>` : '';
+  $('#verdict').className = 'verdict bad';
+  $('#verdict').innerHTML = `<p class="head">${v.prop} violated at bell ${f.st.tick}</p>
+    <p>${prop.name}, line ${v.line + 1}: “${S.ruleText(rule, prop.kind)}”</p>
+    <p>${why}</p>${hints.map((x) => `<p>${x}</p>`).join('')}
+    <p class="stat">Shortest counterexample: ${replayInfo.v.trail.length} steps · “${sv.text}”</p>${more}`;
+}
+function showPass(sp) {
+  const pct = Math.round(result.scaredPaths / result.safePaths * 100);
+  $('#verdict').className = 'verdict good';
+  $('#verdict').innerHTML = `<p class="head">Safe to open</p>
+    <p>Every guest path keeps both safety rules, and the haunt is still scary.</p>
+    <p class="stat">${result.safePaths.toLocaleString('en-US')} visitor paths × ${S.TICKS} bells · checked in ${result.ms} ms · ${pct}% of paths still get a jump-scare</p>`;
+  const lines = [];
+  lines.push('SCARE CUE SAFETY REPORT — Garage haunt');
+  lines.push(`Checked: ${result.safePaths.toLocaleString('en-US')} visitor paths, ${S.TICKS} bells each (every move or stand-still at every bell)`);
+  lines.push('');
+  for (const p of S.SAFETY) lines.push(`  ${p.id}  HOLDS   ${p.text}`);
+  lines.push('');
+  lines.push(`Scare coverage: ${pct}% of paths get at least one jump-scare`);
+  lines.push('');
+  lines.push('Specs as checked:');
+  for (const p of S.PROPS) { lines.push(`  ${p.name}`); sp[p.id].forEach((r, i) => lines.push(`    ${i + 1}  ${S.ruleText(r, p.kind)}${r.src === 'card' ? '   (added)' : ''}`)); }
+  $('#reportText').textContent = lines.join('\n');
+  $('#report').classList.add('on');
+}
+$('#copy').onclick = async () => { try { await navigator.clipboard.writeText($('#reportText').textContent); $('#copy').textContent = 'Copied'; setTimeout(() => $('#copy').textContent = 'Copy report', 1500); } catch (e) { $('#copy').textContent = 'Copy failed'; } };
+
+// ---------- tutorial coach ----------
+let guideOn = true, lastTarget = '', guideBooted = false;
+try { guideOn = localStorage.getItem('sc-guide') !== 'off'; } catch (e) { /* default on */ }
+const FIX = { S2: 1, S1: 0 };          // which card fixes which safety rule
+const pname = (id) => S.PROPS.find((p) => p.id === id).name;
+function guide() {
+  document.querySelectorAll('.pulse').forEach((e) => e.classList.remove('pulse'));
+  const box = $('#coach');
+  document.body.classList.toggle('coached', guideOn);
+  $('#tut').textContent = guideOn ? 'Tutorial on' : 'Tutorial off'; $('#tut').setAttribute('aria-pressed', String(guideOn));
+  if (!guideOn) { box.hidden = true; return; }
+  box.hidden = false;
+  const fixed = [0, 1].filter((ci) => inserts.some((q) => q.card === ci && q.at === 0)).length;
+  let en = '', zh = '', target = null, done = false;
+  const wrong = inserts.find((q) => q.card !== 2 && q.at > 0);
+  const decoy = inserts.find((q) => q.card === 2);
+  const viol = result ? Object.values(result.found).sort((a, b) => a.tick - b.tick) : [];
+  if (phase === 'checking') {
+    en = 'Checking every path a guest could take, bell by bell…'; zh = '正在一響一響檢查訪客所有可能的走法…';
+  } else if (phase === 'replay' && playing && result && !viol.length) {
+    en = 'Every path passed. Watch one guest walk through: the scare still lands from two steps away, and the exit light stays on in the fog.'; zh = '所有路徑都通過了。看一位訪客走一遍：道具在兩步外照樣嚇得到人，霧裡的逃生燈也一直亮著。';
+  } else if (phase === 'replay' && playing) {
+    en = 'Watch the camera. When it turns red, the red line in the spec book is the rule that caused it.'; zh = '看監視器。畫面變紅時，規格書裡標紅的那一行，就是出事的規則。';
+  } else if (result && !viol.length) {
+    done = true; en = 'Safe to open. Both rules hold on every path, and guests still get scared. Copy the report below for your crew.'; zh = '可以開放了。每一條路徑都符合兩條安全規則，訪客照樣會被嚇到。下面的報告可以複製給工作人員。';
+  } else if (wrong && sel == null && result && viol.length) {
+    const ln = wrong.at + 1, a = S.CARDS[wrong.card].actor;
+    en = `Your card sits on line ${ln} of the ${pname(a)}. The line above it is true first, and only the first true line runs, so your card never fires. Tap × to take it out, then put it on line 1.`;
+    zh = `你的卡片在「${pname(a)}」的第 ${ln} 行。上面那行會先成立，而且只會執行第一條成立的規則，所以你的卡片永遠輪不到。按 × 拿掉，再插到第 1 行。`;
+    target = `.spec[data-actor="${a}"] .rm[data-card="${wrong.card}"]`;
+  } else if (sel != null) {
+    const a = S.CARDS[sel].actor;
+    en = sel === 2 ? `Insert it at line 1 of the ${pname(a)}, then run the check. See whether it is enough.` : `Now tap “Insert at line 1” in the ${pname(a)} spec. Line 1 is read first.`;
+    zh = sel === 2 ? `把它插在「${pname(a)}」的第 1 行，再跑一次檢查，看看夠不夠。` : `接著在「${pname(a)}」的規格書點「Insert at line 1」。第 1 行會最先被讀到。`;
+    target = `.slot[data-actor="${a}"][data-at="0"]`;
+  } else if (!result) {
+    if (!inserts.length) { en = 'Press Run safety check. It tries every way a guest could walk through the garage.'; zh = '按「Run safety check」。它會試遍訪客在車庫裡所有可能的走法。'; }
+    else { en = 'Run the check again to see what your card changed.'; zh = '再跑一次檢查，看看你的卡片改變了什麼。'; }
+    target = '#run';
+  } else if (viol.length) {
+    const v = viol[0];
+    if (v.prop === 'S1' && decoy && !inserts.some((q) => q.card === 0)) {
+      en = 'The fog card was not enough: the fog machine acts before the exit light, so the fog is already on when the light goes out. Fix the light instead. Tap this card.';
+      zh = '霧機的卡片不夠：霧機比逃生燈先動，燈熄掉時霧已經噴了。改修逃生燈，點這張卡片。';
+    } else if (v.prop === 'S2') {
+      en = 'The jump-scare swung out at a guest one step away. Tap this card: it tells the prop to hold still when someone is that close.';
+      zh = '跳嚇道具在訪客只差一步時彈出來。點這張卡片：有人貼得這麼近時，叫道具不要動。';
+    } else {
+      en = 'The exit light went dark while the fog was on, so the guest is lost in the fog. Tap this card: it keeps the light on whenever there is fog.';
+      zh = '霧還開著，逃生燈卻熄了，訪客困在霧裡。點這張卡片：只要有霧，燈就保持亮著。';
+    }
+    target = `#tray .card:nth-child(${FIX[v.prop] + 1})`;
+  }
+  box.className = 'coach' + (done ? ' done' : '');
+  box.innerHTML = `<div class="row"><span class="tag">${done ? 'Done' : 'Tutorial'} · fixes ${fixed}/2</span><button class="skip" id="skip">Hide tutorial</button></div><div class="en">${en}</div><div class="zh">${zh}</div>`;
+  $('#skip').onclick = () => setGuide(false);
+  const el = target && document.querySelector(target);
+  if (el) {
+    el.classList.add('pulse');
+    if (target !== lastTarget && guideBooted) {
+      const r = el.getBoundingClientRect(), bottomUI = innerWidth <= 860 ? box.offsetHeight + 16 : 0;
+      if (r.top < 0 || r.bottom > innerHeight - bottomUI) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    }
+  }
+  lastTarget = target || ''; guideBooted = true;
+}
+function setGuide(on) { guideOn = on; try { localStorage.setItem('sc-guide', on ? 'on' : 'off'); } catch (e) { /* ignore */ } lastTarget = ''; guide(); }
+$('#tut').onclick = () => setGuide(!guideOn);
+
+// ---------- CCTV rendering ----------
+let TS = 60, DPR = 1, PAD = 0;
+function resize() {
+  const w = cam.parentElement.clientWidth - 20; DPR = Math.min(2, devicePixelRatio || 1);
+  TS = w / M.w; PAD = TS * .5; const h = TS * M.h + PAD;
+  cam.width = Math.round(w * DPR); cam.height = Math.round(h * DPR); cam.style.height = h + 'px';
+}
+new ResizeObserver(resize).observe(cam.parentElement); addEventListener('resize', resize);
+
+const ease = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+function frameDur() { return reduce ? 1 : 700; }
+let noiseC = document.createElement('canvas');
+noiseC.width = 160; noiseC.height = 120;
+function refreshNoise(amount) {
+  const n = noiseC.getContext('2d'), img = n.createImageData(160, 120);
+  for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255; img.data[i] = v * .6; img.data[i + 1] = v; img.data[i + 2] = v * .7; img.data[i + 3] = Math.random() * 255 * amount; }
+  n.putImageData(img, 0, 0);
+}
+function draw(now) {
+  const W = cam.width / DPR, H = cam.height / DPR, ts = TS, oy = PAD;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#030503'; ctx.fillRect(0, 0, W, H);
+  // advance replay
+  if (playing && frames && now - frameT > frameDur() + (fi === 0 ? 500 : 0)) { frameT = now; advanceFrame(); }
+  const cur = frames ? frames[fi] : null, prev = frames && fi > 0 ? frames[fi - 1] : null;
+  const st = cur ? cur.st : { v: M.start, fog: false, light: true, tick: 0 };
+  const k = cur && prev ? ease(Math.min(1, (now - frameT) / frameDur())) : 1;
+  const vx = prev ? prev.st.v.x + (st.v.x - prev.st.v.x) * k : st.v.x, vy = prev ? prev.st.v.y + (st.v.y - prev.st.v.y) * k : st.v.y;
+  const violated = cur && cur.violation;
+  // room
+  for (let y = 0; y < M.h; y++) for (let x = 0; x < M.w; x++) {
+    const walk = M.walk.has(y * M.w + x);
+    ctx.fillStyle = walk ? ((x + y) & 1 ? '#0d1a11' : '#0f1d13') : '#040605';
+    ctx.fillRect(x * ts, oy + y * ts, ts, ts);
+    if (walk) { ctx.strokeStyle = 'rgba(140,240,168,.06)'; ctx.strokeRect(x * ts + .5, oy + y * ts + .5, ts - 1, ts - 1); }
+  }
+  // exit light
+  const L = M.pos.light, lightOn = st.light;
+  { const x = (L.x + .5) * ts, y = oy + (L.y + .5) * ts;
+    if (lightOn) { const g = ctx.createRadialGradient(x, y, 0, x, y, ts * 2.2); g.addColorStop(0, 'rgba(140,240,168,.35)'); g.addColorStop(1, 'rgba(140,240,168,0)'); ctx.fillStyle = g; ctx.fillRect(x - ts * 2.2, y - ts * 2.2, ts * 4.4, ts * 4.4); }
+    ctx.fillStyle = lightOn ? '#b9ffcb' : '#1b2a1f'; ctx.fillRect(x - ts * .34, y - ts * .16, ts * .68, ts * .32);
+    ctx.fillStyle = lightOn ? '#06210f' : '#3a5a44'; ctx.font = `600 ${ts * .2}px "IBM Plex Mono", monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('EXIT', x, y + 1); }
+  // planning: shaded ranges
+  if (phase === 'plan' || phase === 'checking') {
+    for (const id of ['jump', 'fog']) { const p = M.pos[id];
+      for (let y = 0; y < M.h; y++) for (let x = 0; x < M.w; x++) { if (!M.walk.has(y * M.w + x)) continue; const d = Math.abs(x - p.x) + Math.abs(y - p.y);
+        if (d <= S.NEAR) { ctx.fillStyle = d <= S.ADJ ? 'rgba(255,90,78,.12)' : 'rgba(242,165,65,.08)'; ctx.fillRect(x * ts + 2, oy + y * ts + 2, ts - 4, ts - 4); } } }
+  }
+  // fog machine and fog
+  const F = M.pos.fog;
+  { const x = F.x * ts, y = oy + F.y * ts; ctx.fillStyle = '#1e2b22'; ctx.fillRect(x + ts * .15, y + ts * .2, ts * .7, ts * .55); ctx.fillStyle = '#5c7a64'; ctx.fillRect(x + ts * .4, y + ts * .12, ts * .2, ts * .12);
+    ctx.fillStyle = '#8cf0a8'; ctx.font = `500 ${ts * .15}px "IBM Plex Mono", monospace`; ctx.textAlign = 'center'; ctx.fillText('FOG', x + ts / 2, y + ts * .5); }
+  if (st.fog) {
+    for (let i = 0; i < 26; i++) {
+      const a = i * 2.39 + now / 2400, r = (.6 + (i % 7) * .32) * ts;
+      const x = (F.x + .5) * ts + Math.cos(a) * r * 1.3, y = oy + (F.y - .3) * ts + Math.sin(a) * r * .55 - (i % 3) * ts * .2;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, ts * .9); g.addColorStop(0, `rgba(200,230,210,${lightOn ? .16 : .3})`); g.addColorStop(1, 'rgba(200,230,210,0)'); ctx.fillStyle = g; ctx.fillRect(x - ts, y - ts, ts * 2, ts * 2);
+    }
+  }
+  // jump-scare
+  const J = M.pos.jump, jFired = cur && cur.turns.find((t) => t.id === 'jump' && t.fired >= 0 && replayInfo.sp.jump[t.fired].act === 'trigger');
+  { const x = (J.x + .5) * ts, y = oy + (J.y + .5) * ts, out = jFired ? Math.min(1, (now - frameT) / 160) : 0;
+    ctx.fillStyle = '#1e2b22'; ctx.fillRect(x - ts * .38, y - ts * .38, ts * .76, ts * .76);
+    ctx.save(); ctx.translate(x, y + out * ts * .55);
+    ctx.fillStyle = jFired ? '#e8ffe9' : '#7fae8a';
+    ctx.beginPath(); ctx.arc(0, -ts * .05, ts * .2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#030503'; ctx.beginPath(); ctx.arc(-ts * .07, -ts * .08, ts * .045, 0, Math.PI * 2); ctx.arc(ts * .07, -ts * .08, ts * .045, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(-ts * .08, ts * .05, ts * .16, ts * .04); ctx.restore();
+    if (jFired && now - frameT < 220) { ctx.fillStyle = `rgba(230,255,235,${.25 * (1 - (now - frameT) / 220)})`; ctx.fillRect(0, 0, W, H); } }
+  // checking: every path at once
+  if (flood) {
+    const t = Math.min(S.TICKS, Math.floor((now - flood.t0) / 100));
+    for (let q = 0; q <= t; q++) for (const [x, y] of flood.layers[q]) { ctx.fillStyle = `rgba(140,240,168,${.05 + .02 * (t - q)})`; ctx.beginPath(); ctx.arc((x + .5) * ts, oy + (y + .5) * ts, ts * .16, 0, Math.PI * 2); ctx.fill(); }
+  }
+  // visitor trail and visitor
+  if (frames) {
+    ctx.strokeStyle = 'rgba(140,240,168,.35)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let i = 0; i <= fi; i++) { const p = frames[i].st.v; const X = (p.x + .5) * ts, Y = oy + (p.y + .5) * ts; i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  { const x = (vx + .5) * ts, y = oy + (vy + .5) * ts;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, ts * .6); g.addColorStop(0, 'rgba(255,255,255,.25)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(x - ts, y - ts, ts * 2, ts * 2);
+    ctx.fillStyle = violated ? '#ffb3ab' : '#f1fff3';
+    ctx.beginPath(); ctx.arc(x, y - ts * .17, ts * .1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x - ts * .15, y + ts * .28); ctx.lineTo(x, y - ts * .06); ctx.lineTo(x + ts * .15, y + ts * .28); ctx.closePath(); ctx.fill(); }
+  // darkness when the exit light is off
+  if (!lightOn) { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(0, oy, W, H - oy); }
+  // HUD
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 0, W, oy);
+  ctx.font = `500 ${Math.max(11, ts * .2)}px "IBM Plex Mono", monospace`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  const narrow = W < 520; ctx.font = `500 ${narrow ? 10 : Math.max(11, ts * .2)}px "IBM Plex Mono", monospace`;
+  ctx.fillStyle = '#8cf0a8'; ctx.fillText(narrow ? 'CAM 02' : 'CAM 02 · GARAGE HAUNT', ts * .3, oy / 2);
+  const recOn = (phase === 'replay' || phase === 'done') && Math.floor(now / 600) % 2 === 0;
+  ctx.textAlign = 'right';
+  const tc = (narrow ? '' : `20:00:${String((st.tick) * 5).padStart(2, '0')}  `) + `BELL ${String(st.tick).padStart(2, '0')}/${S.TICKS}`;
+  ctx.fillText(phase === 'checking' ? (narrow ? 'CHECKING…' : 'CHECKING EVERY PATH…') : tc, W - ts * 1.1, oy / 2);
+  if (recOn || phase === 'checking') { ctx.fillStyle = '#ff5a4e'; ctx.beginPath(); ctx.arc(W - ts * .6, oy / 2, ts * .09, 0, Math.PI * 2); ctx.fill(); }
+  // violation overlay
+  if (violated) {
+    const g = Math.sin(now / 50) > .6 ? ts * .08 : 0;
+    ctx.fillStyle = 'rgba(255,90,78,.12)'; ctx.fillRect(0, oy, W, H - oy);
+    ctx.strokeStyle = '#ff5a4e'; ctx.lineWidth = 3; ctx.strokeRect(4 + g, oy + 4, W - 8, H - oy - 8);
+    ctx.fillStyle = 'rgba(0,0,0,.7)'; const bw = Math.min(W * .8, ts * 6.5); ctx.fillRect(W / 2 - bw / 2 + g, H / 2 - ts * .45, bw, ts * .9);
+    ctx.fillStyle = '#ff5a4e'; ctx.textAlign = 'center'; ctx.font = `600 ${ts * .3}px "IBM Plex Mono", monospace`;
+    ctx.fillText(`${cur.violation.prop} VIOLATED · ${S.SAFETY.find((p) => p.id === cur.violation.prop).short.toUpperCase()}`, W / 2 + g, H / 2);
+  }
+  // CCTV texture: scanlines, noise, vignette
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+  if (!reduce && Math.floor(now / 70) % 1 === 0) refreshNoise(violated ? .5 : flood ? .3 : .12);
+  ctx.globalAlpha = .6; ctx.drawImage(noiseC, 0, 0, W, H); ctx.globalAlpha = 1;
+  const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.6)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  requestAnimationFrame(draw);
+}
+
+resize(); renderAll(); requestAnimationFrame(draw);
+})();
+</script>
+</body></html>
