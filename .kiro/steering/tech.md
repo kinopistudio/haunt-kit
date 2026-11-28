@@ -11,10 +11,10 @@ inclusion: always
 - **Hosting:** static builds on GitHub Pages or Vercel. No backend.
 
 ## Engine rules (do not break these)
-- The engine is pure and deterministic: no `Math.random`, no `Date`, and no DOM in `packages/haunt-kit/src/{grammar,world,engine,solver,lint}`.
+- The engine is pure and deterministic: no `Math.random`, no `Date`, and no DOM in `packages/haunt-kit/src/{grammar,world,engine,solver,trace}`.
 - Each tick: scheduled events first, then each actor in a fixed order evaluates its rules top to bottom and runs only the **first true** rule. Properties are checked after every actor's turn.
 - Distances are Manhattan. Movement is greedy: try the major axis, then the minor axis, otherwise stay.
 - The skeleton knows nothing about ghosts, girls or fog. Apps register their conditions and actions through the registry.
 
 ## Performance budget
-`pnpm verify` must check every level of both apps in under 3 seconds on a laptop.
+`pnpm verify` must check every level of both apps in under 3 seconds on a laptop. The solver searches the state space with memoization; it never enumerates visitor paths one by one (Scare Cue has over 4 million).

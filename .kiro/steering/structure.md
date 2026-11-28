@@ -5,14 +5,14 @@ inclusion: always
 
 ```
 .kiro/steering/   product, tech, structure, game-feel, ghost-grammar
-.kiro/specs/      one folder per feature spec (rule-engine, solver, spec-lint, mcp-server, midnight-ward, scare-cue, director-mode)
-.kiro/hooks/      verify-and-repair, engine-tests, trace-coverage, devlog
-packages/haunt-kit/        the skeleton: grammar, world, engine, registry, solver, lint, trace, ui (spec book component)
-packages/haunt-kit-mcp/    MCP server: simulate, solve_level, explain_failure, lint_spec
+.kiro/specs/      one folder per feature spec (rule-engine, solver, mcp-server, midnight-ward, scare-cue)
+.kiro/hooks/      engine-tests, verify-and-repair
+packages/haunt-kit/        the skeleton: grammar, world, engine, registry, solver, trace, ui (spec book component)
+packages/haunt-kit-mcp/    MCP server: solve_level, explain_failure
 apps/midnight-ward/        game; character specs live in apps/midnight-ward/specs/
 apps/scare-cue/            tool; prop specs live in apps/scare-cue/specs/
 reference/prototype/       design reference only, do not import
-docs/devlog.md             written by the devlog hook
+docs/devlog.md             daily notes, written by hand
 video/                     shot list, voiceover script, subtitles
 ```
 
