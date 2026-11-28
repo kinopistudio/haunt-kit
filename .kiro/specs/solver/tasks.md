@@ -50,7 +50,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `specs/props.md`, `specs/safety.md`, `src/level.ts` (map, legend, turn order, horizon, cards as sentences, `buildScareCue`, `checkScareCue`). Tests for spec loading, level shape and cards.
   - _Requirements: S8.2, S8.3, S8.4_
 
-- [ ] 5.3 Scare Cue engine semantics
+- [x] 5.3 Scare Cue engine semantics
   - A test that scripts the visitor's moves by hand and checks the turn order, that `S1` and `S2` are checked after every prop's turn, and that the first failure stops the tick.
   - _Requirements: S8.5_
 
