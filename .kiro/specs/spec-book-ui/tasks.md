@@ -17,7 +17,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: each finding kind, the exact sentence forms, names and tick word from options, origin notes, empty findings for a clean run, inputs untouched, numbers re-derived from the recording.
   - _Requirements: U4.1, U4.2, U4.3, U4.4, U4.5, U4.6, U4.7, U4.8_
 
-- [ ] 2.1 Marks at a cursor
+- [x] 2.1 Marks at a cursor
   - `ui/marks.ts` with `LineMark` and `bookState`.
   - Tests: cursor 0, `lit`/`false`/`shadowed`/`skipped`, `fired` and `written` lists, tallies, `final`, `struck`, the `RangeError`. Property test: the tally never decreases as the cursor grows.
   - _Requirements: U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8_
