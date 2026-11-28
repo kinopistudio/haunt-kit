@@ -76,6 +76,6 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - The 375 px layout, the sticky dock, touch targets, focus styles, `lang`, reduced motion. Tests on the stylesheet text and the DOM (breakpoint rules, 36 px and 44 px targets, focus-visible, the live region).
   - _Requirements: M11.1, M11.2, M11.3, M11.4_
 
-- [ ] 5.2 Build, scans, browser check and README
+- [x] 5.2 Build, scans, browser check and README
   - Scans: relative base, imports only from `haunt-kit`, no `reference/` import, no `fetch` or media files, `localStorage` only in `storage.ts`, no solve counts as literals. A coverage test for the `M` ids. `pnpm build` and `pnpm test` pass. Run `pnpm --filter midnight-ward preview` and check in a browser at 1280 px and 375 px that every screen loads without console errors. Update the README.
   - _Requirements: M1.1, M1.2, M1.3, M1.5, M12.2_

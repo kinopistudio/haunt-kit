@@ -19,10 +19,18 @@ pnpm test      # Vitest and fast-check, all packages
 pnpm verify    # runs the solver on every level of both apps and prints a table (under a second)
 ```
 
+## Play Midnight Ward
+```
+pnpm --filter midnight-ward dev        # local dev server
+pnpm --filter midnight-ward build      # static site in apps/midnight-ward/dist, relative paths, host it under any URL
+pnpm --filter midnight-ward preview    # serve the built site
+```
+Mouse, touch and keyboard work, down to a 375 px phone. `prefers-reduced-motion` turns off threads, ash and gliding. The sound toggle is on the title and play screens.
+
 ## Layout
 - `packages/haunt-kit`: the skeleton (grammar, registry, world, engine, trace, solver) and the shared UI in `src/ui`: a spec book that shows each actor's rules as numbered EARS lines (lit, shadowed, gold, ash), a replay bar, and the recording, line statistics and plain-English failure explanation behind them. It knows no game words.
 - `packages/haunt-kit-mcp`: placeholder for the MCP server.
-- `apps/midnight-ward`: the game's vocabulary, levels and character specs (`specs/`).
+- `apps/midnight-ward`: the game. Its vocabulary, levels and character specs (`specs/`), and a title screen, level select and play screen (plan, twelve bells with a replay bar, dawn or capture) on a 2.5D canvas, with sound made by Web Audio.
 - `apps/scare-cue`: the tool. It adds only its own vocabulary (`src/vocab.ts`), its level and cards (`src/level.ts`) and its prop and safety specs (`specs/`).
 - `.kiro/specs/rule-engine`, `.kiro/specs/solver`, `.kiro/specs/spec-book-ui`, `.kiro/specs/midnight-ward`: the specs this code was built from (requirements, design, tasks).
 
