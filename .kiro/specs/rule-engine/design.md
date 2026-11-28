@@ -21,12 +21,13 @@ package.json  pnpm-workspace.yaml  tsconfig.base.json  scripts/verify.mjs
 packages/haunt-kit/
   package.json            "exports": "./src/index.ts" (TypeScript source, no emit)
   src/index.ts            public entry; the only path apps may import
-  src/grammar/            types.ts  parse.ts  print.ts  spec.ts  index.ts
+  src/grammar/            types.ts  parse.ts  print.ts  validate.ts  spec.ts  index.ts
   src/registry/           types.ts  registry.ts  index.ts
   src/world/              types.ts  grid.ts  move.ts  create.ts  index.ts
   src/engine/             tick.ts  index.ts
   src/trace/              types.ts  index.ts
-  test/                   one file per module, plus boundaries and spec-coverage tests
+  test/                   one file per module, plus structure and spec-coverage tests
+  test/fixtures/          toy-vocab.ts (neutral vocabulary), arbitraries.ts (fast-check generators), bare-world.ts
 packages/haunt-kit-mcp/   package.json + src/index.ts placeholder (no code yet)
 apps/midnight-ward/
   index.html  vite.config.ts  src/main.ts
@@ -76,7 +77,7 @@ write    = "WHEN" schedule-condition "," "THE" actor "SHALL" "write" '"' rule '"
 actor    = lowercase word, optionally more words or hyphens: [a-z][a-z0-9-]*( [a-z0-9-]+)*
 ```
 
-- Keywords `THE`, `WHEN`, `IF`, `THEN`, `SHALL` are uppercase. Phrase text is matched case-insensitively and with collapsed spaces. The printer always emits registered pattern text as registered.
+- Keywords `THE`, `WHEN`, `IF`, `THEN`, `SHALL` are uppercase, and extra spaces around them are allowed. Phrase text is matched case-insensitively and with collapsed spaces. The printer always emits registered pattern text as registered.
 - The first `, ` after the condition ends the condition. Registered patterns therefore may not contain commas, periods or double quotes (R2.4).
 - `write` is a rewrite of the actor's own spec: the inner rule must name the same actor, must not itself be a `write`, and the line must be an integer ≥ 1 (R3.6). `WHEN always` is not a form: the ubiquitous rule is how `always` is written.
 - A `write` sentence is not a line of the spec. The loader moves it into `SpecSet.events`.
@@ -87,6 +88,7 @@ actor    = lowercase word, optionally more words or hyphens: [a-z][a-z0-9-]*( [a
 parseSentence(text: string, registry: Registry): ParseResult<Sentence>
 printRule(actor: string, rule: Rule, registry: Registry): string
 printEvent(event: ScheduledEvent, registry: Registry): string
+validateRule(rule: Rule, registry: Registry): string | null   // a message, or null when the rule fits the registry
 loadSpec(text: string, registry: Registry): { spec: SpecSet; errors: SpecError[] }
 ```
 
@@ -130,6 +132,7 @@ class Registry {
   property(id: string): PropertyDef | undefined;
   matchCondition(text: string): { def: ConditionDef; n?: number } | undefined;
   matchAction(text: string): ActionDef | undefined;
+  conditionHasParam(id: string): boolean;                       // true when the pattern has {n}
   readonly scheduleCondition: ConditionDef | undefined;
   conditions(): readonly ConditionDef[];  actions(): readonly ActionDef[];  properties(): readonly PropertyDef[];
 }
