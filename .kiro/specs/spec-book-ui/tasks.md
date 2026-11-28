@@ -39,6 +39,6 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - `ui/replay-bar.ts` with `replayBarModel` and `ReplayBar`: buttons, range, keys, speed, timer. Tests in `happy-dom` with fake timers.
   - _Requirements: U8.1, U8.2, U8.3, U8.4_
 
-- [ ] 4.1 Boundaries, exports and coverage
+- [x] 4.1 Boundaries, exports and coverage
   - `ui/index.ts` and the entry point exports. Scans for U1.1 to U1.4 (imports, game words, no DOM at import, no randomness or clock). A coverage test for the `U` ids like `solver-coverage.test.ts`. A short section in the README.
   - _Requirements: U1.1, U1.2, U1.3, U1.4, U1.5_

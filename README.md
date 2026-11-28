@@ -20,11 +20,11 @@ pnpm verify    # runs the solver on every level of both apps and prints a table 
 ```
 
 ## Layout
-- `packages/haunt-kit`: the skeleton (grammar, registry, world, engine, trace, solver).
+- `packages/haunt-kit`: the skeleton (grammar, registry, world, engine, trace, solver) and the shared UI in `src/ui`: a spec book that shows each actor's rules as numbered EARS lines (lit, shadowed, gold, ash), a replay bar, and the recording, line statistics and plain-English failure explanation behind them. It knows no game words.
 - `packages/haunt-kit-mcp`: placeholder for the MCP server.
 - `apps/midnight-ward`: the game's vocabulary, levels and character specs (`specs/`).
 - `apps/scare-cue`: the tool. It adds only its own vocabulary (`src/vocab.ts`), its level and cards (`src/level.ts`) and its prop and safety specs (`specs/`).
-- `.kiro/specs/rule-engine`, `.kiro/specs/solver`: the specs this code was built from (requirements, design, tasks).
+- `.kiro/specs/rule-engine`, `.kiro/specs/solver`, `.kiro/specs/spec-book-ui`, `.kiro/specs/midnight-ward`: the specs this code was built from (requirements, design, tasks).
 
 ## Design reference
 `reference/prototype/` holds a playable prototype made at the start of the submission period to settle the rules, levels and look. The build does not import it. Kiro implements the packages and apps from the specs in `.kiro/specs/`.
