@@ -92,7 +92,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Night IV: the rewrite at the sixth bell. Night I: a bell line below the always-true line is shadowed and never fires, and the same line above it fires.
   - _Requirements: R6.7, R6.8_
 
-- [ ] 7.1 Requirement coverage test
+- [x] 7.1 Requirement coverage test
   - A test that reads this spec's `requirements.md` and fails when an id has no test name starting with it.
   - _Requirements: R1.8_
 
