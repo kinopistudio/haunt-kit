@@ -1,10 +1,9 @@
 import fc from 'fast-check';
 import { cloneWorld, run } from 'haunt-kit';
-import type { BoardChoice, TickTrace } from 'haunt-kit';
+import type { TickTrace } from 'haunt-kit';
 import { describe, expect, it } from 'vitest';
 import { LEVEL_INFO, levelInfo, makeNames } from '../src/content';
 import { LEVELS, NIGHT_1, NIGHT_4, PROLOGUE, buildWorld } from '../src/levels';
-import type { LevelDef } from '../src/levels';
 import {
   cardPlace,
   floorTiles,
@@ -25,6 +24,7 @@ import {
 } from '../src/plan';
 import type { Plan } from '../src/plan';
 import { levelChoices } from '../src/solve';
+import { planOfChoice } from './fixtures/plan-of-choice';
 import { createRegistry } from '../src/vocab';
 
 function must<T>(value: T | null | undefined): T {
@@ -192,20 +192,6 @@ describe('plan: cards', () => {
 });
 
 // ---- M3.11: a plan builds the world the solver builds for the same choice ----
-
-/** The plan that equals a solver choice: tokens on their tiles, cards inserted in card order. */
-function planOfChoice(level: LevelDef, choice: BoardChoice): Plan {
-  const tiles = floorTiles(level);
-  let plan = freshPlan(level);
-  level.items.forEach((type, k) => {
-    const tile = tiles[choice.tiles[k]!]!;
-    plan = must(placeItem(level, plan, type, tile.x, tile.y));
-  });
-  choice.cards.forEach((place, c) => {
-    if (place) plan = must(insertCard(level, plan, c, place.actor, place.at));
-  });
-  return plan;
-}
 
 /** A trace without line ids. Two worlds that insert the same cards in a different order number their lines differently. */
 function withoutIds(traces: TickTrace[]) {

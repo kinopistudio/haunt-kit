@@ -7,7 +7,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: placing, refusing walls, actors, the bed and occupied tiles, taking items back, inserting and removing cards with the lines shifting, one card in one spec at most, clearing, and a property test that any operation sequence keeps the plan valid. A plan equals the solver's choice: run both and compare status and traces.
   - _Requirements: M3.1, M3.2, M3.3, M3.4, M3.8, M3.10, M3.11_
 
-- [ ] 1.2 Running a night
+- [x] 1.2 Running a night
   - `src/night.ts`: `runNight` (build, `recordRun`, outcome, struck line, stats, burned count).
   - Tests: an empty board loses on all three levels; the first solution of each level wins; the status equals the solver's; the struck line is the girl's line on the last tick; `burned` equals the number of lines with `fired` 0.
   - _Requirements: M4.1, M5.1, M5.3_
