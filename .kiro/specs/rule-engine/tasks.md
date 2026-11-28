@@ -72,7 +72,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Property checks after every turn, violation stops the tick, horizon gives `complete`, `tick` on a finished world returns `null`, `run`.
   - _Requirements: R5.7, R5.8, R5.9_
 
-- [ ] 5.4 Determinism and trace format
+- [x] 5.4 Determinism and trace format
   - Property tests: identical traces from a clone, JSON round trip, random line lists keep R5.2 and R5.5.
   - _Requirements: R5.2, R5.5, R5.10, R5.11_
 

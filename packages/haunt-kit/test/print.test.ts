@@ -2,25 +2,12 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { ALWAYS, Registry, parseSentence, printEvent, printRule, validateRule } from '../src/index';
 import type { Rule } from '../src/index';
+import { actorArb, ruleArbFor } from './fixtures/arbitraries';
 import { createToyRegistry } from './fixtures/toy-vocab';
 
 const registry = createToyRegistry();
 
-const actorArb = fc.stringMatching(/^[a-z][a-z0-9-]{0,8}( [a-z0-9-]{1,6}){0,2}$/);
-
-const ruleArb: fc.Arbitrary<Rule> = fc
-  .record({
-    kw: fc.constantFrom('WHEN', 'IF'),
-    cond: fc.constantFrom(...registry.conditions().map((c) => c.id)),
-    act: fc.constantFrom(...registry.actions().map((a) => a.id)),
-    n: fc.integer({ min: 0, max: 999_999_999 }),
-  })
-  .chain(({ kw, cond, act, n }) =>
-    fc.constantFrom<Rule>(
-      { kw: '', cond: ALWAYS, act },
-      registry.conditionHasParam(cond) ? { kw, cond, act, n } : { kw, cond, act },
-    ),
-  );
+const ruleArb = ruleArbFor(registry);
 
 describe('printRule', () => {
   it('R3.7: prints each form in canonical text', () => {
