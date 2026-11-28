@@ -2,7 +2,7 @@ import type { Registry } from '../registry/registry';
 import { ALWAYS } from './types';
 import type { Rule } from './types';
 
-const MAX_N = 999_999_999;
+export const MAX_N = 999_999_999;
 
 /** Returns a message when `rule` cannot be printed or run with `registry`, and `null` when it is fine. */
 export function validateRule(rule: Rule, registry: Registry): string | null {

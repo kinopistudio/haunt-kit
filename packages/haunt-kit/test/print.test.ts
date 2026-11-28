@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { ALWAYS, parseSentence, printRule, validateRule } from '../src/index';
+import { ALWAYS, Registry, parseSentence, printEvent, printRule, validateRule } from '../src/index';
 import type { Rule } from '../src/index';
 import { createToyRegistry } from './fixtures/toy-vocab';
 
@@ -121,5 +121,38 @@ describe('printRule', () => {
 
   it('R3.7: validateRule accepts what the parser produces', () => {
     expect(validateRule({ kw: 'IF', cond: 'late', act: 'rest', n: 4 }, registry)).toBeNull();
+  });
+});
+
+describe('printEvent', () => {
+  const eventArb = fc.record({
+    tick: fc.integer({ min: 0, max: 999_999_999 }),
+    actor: actorArb,
+    line: fc.integer({ min: 1, max: 999_999_999 }),
+    rule: ruleArb,
+  });
+
+  it('R3.7: prints a scheduled write in canonical text', () => {
+    expect(printEvent({ tick: 6, actor: 'seeker', line: 1, rule: { kw: 'WHEN', cond: 'near', act: 'approach' } }, registry)).toBe(
+      'WHEN the clock strikes 6, THE seeker SHALL write "WHEN the target is near, THE seeker SHALL step toward the target." at line 1.',
+    );
+  });
+
+  it('R3.7: round trip: parse(printEvent(event)) equals the event', () => {
+    fc.assert(
+      fc.property(eventArb, (event) => {
+        const back = parseSentence(printEvent(event, registry), registry);
+        expect(back).toEqual({ ok: true, value: { type: 'write', event } });
+      }),
+      { numRuns: 500 },
+    );
+  });
+
+  it('R3.7: printing an event that does not fit throws', () => {
+    const rule: Rule = { kw: '', cond: ALWAYS, act: 'rest' };
+    expect(() => printEvent({ tick: 1, actor: 'a', line: 0, rule }, registry)).toThrow(/line 0/);
+    expect(() => printEvent({ tick: -1, actor: 'a', line: 1, rule }, registry)).toThrow(/tick -1/);
+    expect(() => printEvent({ tick: 1, actor: 'a', line: 1, rule: { ...rule, act: 'x' } }, registry)).toThrow(/not registered/);
+    expect(() => printEvent({ tick: 1, actor: 'a', line: 1, rule }, new Registry())).toThrow(/schedule condition/);
   });
 });

@@ -93,10 +93,52 @@ function finish(
   }
 
   const a = at(form.act);
+  if (a.text.startsWith('write ') || a.text === 'write') {
+    return finishWrite(form, actor.text, condId, n, a, registry);
+  }
   const action = registry.matchAction(a.text);
   if (!action) return fail(`unknown action "${a.text}"`, a.column);
 
   const rule: Rule = { kw: form.kind, cond: condId, act: action.id };
   if (n !== undefined) rule.n = n;
   return { ok: true, value: { type: 'rule', actor: actor.text, rule } };
+}
+
+const WRITE_RE = /^write "(.*)" at line (.+)$/d;
+const MAX_LINE = 999_999_999;
+
+/** `WHEN <schedule condition>, THE <actor> SHALL write "<rule>" at line <k>.` */
+function finishWrite(
+  form: Form,
+  actor: string,
+  condId: string,
+  n: number | undefined,
+  a: { text: string; column: number },
+  registry: Registry,
+): ParseResult<Sentence> {
+  const schedule = registry.scheduleCondition;
+  if (!schedule) return fail('write sentences need a schedule condition, and none is registered', a.column);
+  if (form.kind !== 'WHEN' || condId !== schedule.id || n === undefined) {
+    return fail(`a write sentence is written WHEN ${schedule.pattern}, THE <actor> SHALL write "<rule>" at line <k>.`, a.column);
+  }
+  const m = WRITE_RE.exec(a.text);
+  if (!m || !m.indices) return fail('a write action reads: write "<rule>" at line <k>', a.column);
+
+  const lineText = m[2]!;
+  const lineColumn = a.column + m.indices[2]![0];
+  if (!/^\d{1,9}$/.test(lineText)) return fail(`"${lineText}" is not a line number`, lineColumn);
+  const line = Number(lineText);
+  if (line < 1 || line > MAX_LINE) return fail(`line numbers start at 1, not ${lineText}`, lineColumn);
+
+  const innerText = m[1]!;
+  const innerColumn = a.column + m.indices[1]![0];
+  const inner = parseSentence(innerText, registry);
+  if (!inner.ok) {
+    return fail(`in the written rule: ${inner.error.message}`, innerColumn + inner.error.column - 1);
+  }
+  if (inner.value.type !== 'rule') return fail('a written rule cannot itself be a write sentence', innerColumn);
+  if (inner.value.actor !== actor) {
+    return fail(`"${actor}" can only rewrite its own spec, not the spec of "${inner.value.actor}"`, innerColumn);
+  }
+  return { ok: true, value: { type: 'write', event: { tick: n, actor, line, rule: inner.value.rule } } };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSentence } from '../src/index';
+import { Registry, parseSentence } from '../src/index';
 import type { ParseResult, Sentence } from '../src/index';
 import { createToyRegistry } from './fixtures/toy-vocab';
 
@@ -127,5 +127,84 @@ describe('parseSentence: errors', () => {
       expect(() => parse(text)).not.toThrow();
       expect(parse(text).ok).toBe(false);
     }
+  });
+});
+
+const WROTE = 'WHEN the clock strikes 6, THE seeker SHALL write "WHEN the target is near, THE seeker SHALL step toward the target." at line 1.';
+
+describe('parseSentence: scheduled write', () => {
+  it('R3.5: a write sentence parses into a scheduled event', () => {
+    const r = parse(WROTE);
+    expect(r).toEqual({
+      ok: true,
+      value: {
+        type: 'write',
+        event: { tick: 6, actor: 'seeker', line: 1, rule: { kw: 'WHEN', cond: 'near', act: 'approach' } },
+      },
+    });
+  });
+
+  it('R3.5: the written rule can be any rule form, and the line any positive number', () => {
+    const a = parse('WHEN the clock strikes 2, THE seeker SHALL write "THE seeker SHALL do nothing." at line 12.');
+    expect(a).toMatchObject({ ok: true, value: { event: { tick: 2, line: 12, rule: { kw: '', cond: 'always', act: 'rest' } } } });
+    const b = parse('WHEN the clock strikes 2, THE seeker SHALL write "IF the clock is past 4, THEN THE seeker SHALL do nothing." at line 1.');
+    expect(b).toMatchObject({ ok: true, value: { event: { rule: { kw: 'IF', cond: 'late', n: 4 } } } });
+  });
+
+  it('R3.6: a write sentence without a schedule condition in the registry is an error', () => {
+    const noSchedule = new Registry()
+      .addCondition({ id: 'near', pattern: 'the target is near', test: () => true })
+      .addCondition({ id: 'strikes', pattern: 'the clock strikes {n}', test: () => true })
+      .addAction({ id: 'approach', pattern: 'step toward the target', run: () => {} });
+    const r = parseSentence(WROTE, noSchedule);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.message).toContain('need a schedule condition');
+  });
+
+  it('R3.6: write needs the schedule condition, not another one', () => {
+    const e = errorOf('WHEN the clock is past 6, THE seeker SHALL write "THE seeker SHALL do nothing." at line 1.');
+    expect(e.message).toContain('a write sentence is written WHEN the clock strikes {n}');
+    expect(errorOf('THE seeker SHALL write "THE seeker SHALL do nothing." at line 1.').message).toContain('a write sentence is written');
+    expect(errorOf('IF the clock strikes 6, THEN THE seeker SHALL write "THE seeker SHALL do nothing." at line 1.').message).toContain(
+      'a write sentence is written',
+    );
+  });
+
+  it('R3.6: a malformed write action is an error', () => {
+    expect(errorOf('WHEN the clock strikes 6, THE seeker SHALL write THE seeker SHALL do nothing. at line 1.').message).toContain(
+      'write "<rule>" at line <k>',
+    );
+    expect(errorOf('WHEN the clock strikes 6, THE seeker SHALL write "THE seeker SHALL do nothing.".').message).toContain('write "<rule>"');
+  });
+
+  it('R3.6: a line below 1 or not a number is an error at the number', () => {
+    const zeroText = 'WHEN the clock strikes 6, THE seeker SHALL write "THE seeker SHALL do nothing." at line 0.';
+    const zero = errorOf(zeroText);
+    expect(zero.message).toContain('start at 1');
+    expect(zero.column).toBe(zeroText.indexOf('0.') + 1);
+    expect(errorOf('WHEN the clock strikes 6, THE seeker SHALL write "THE seeker SHALL do nothing." at line two.').message).toContain(
+      'not a line number',
+    );
+    expect(errorOf('WHEN the clock strikes 6, THE seeker SHALL write "THE seeker SHALL do nothing." at line -1.').message).toContain(
+      'not a line number',
+    );
+  });
+
+  it('R3.6: writing a rule for another actor is an error', () => {
+    const e = errorOf('WHEN the clock strikes 6, THE seeker SHALL write "THE watcher SHALL do nothing." at line 1.');
+    expect(e.message).toContain('can only rewrite its own spec');
+  });
+
+  it('R3.6: a nested write sentence is an error', () => {
+    const inner = 'WHEN the clock strikes 7, THE seeker SHALL write "THE seeker SHALL do nothing." at line 1.';
+    const e = errorOf(`WHEN the clock strikes 6, THE seeker SHALL write "${inner}" at line 1.`);
+    expect(e.message).toContain('cannot itself be a write sentence');
+  });
+
+  it('R3.6: an error inside the written rule points into the quotes', () => {
+    const text = 'WHEN the clock strikes 6, THE seeker SHALL write "THE seeker SHALL dance." at line 1.';
+    const e = errorOf(text);
+    expect(e.message).toContain('in the written rule: unknown action "dance"');
+    expect(e.column).toBe(text.indexOf('dance') + 1);
   });
 });

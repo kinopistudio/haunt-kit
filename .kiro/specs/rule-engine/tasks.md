@@ -40,7 +40,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `printRule`; property test that printing then parsing returns an equal rule; property test that `parseSentence` never throws.
   - _Requirements: R3.6, R3.7_
 
-- [ ] 3.3 Scheduled write sentences
+- [x] 3.3 Scheduled write sentences
   - Parse and print `write` sentences, with the restrictions (own actor, no nesting, line ≥ 1, a schedule condition must exist).
   - _Requirements: R3.5, R3.6, R3.7_
 
