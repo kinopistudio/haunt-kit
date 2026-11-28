@@ -62,7 +62,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests in `happy-dom` with a stub scene: select and place, refuse a wall, take back, drag to a tile and cancel, select a card and choose a slot, drag over a slot, remove a card, clear, keyboard placement, the announcements.
   - _Requirements: M3.5, M3.6, M3.7, M3.9, M3.12_
 
-- [ ] 4.3 Play screen: night, replay and outcome
+- [x] 4.3 Play screen: night, replay and outcome
   - The ring button, the replay bar, the clock, bell sounds, threads, the rewrite bleed, the lose and win sequences, `Try again`, `Back to planning`, `Go to <next>`, cleared levels saved, the outcome only at the last bell.
   - Tests in `happy-dom`: ring and read the book at several bells, scrub equals step, shadowed lines show ◐, a lost night strikes the girl's line and shows the explanation, retry keeps the plan, a won night marks ash and gold and saves the level, the outcome hides when the cursor moves back.
   - _Requirements: M4.2, M4.3, M4.4, M4.5, M4.6, M4.7, M5.2, M5.5, M5.6, M9.2, M9.4, M2.4_

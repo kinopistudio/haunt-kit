@@ -135,6 +135,7 @@ button:focus-visible, a:focus-visible, canvas:focus-visible, .folio:focus-visibl
 /* Verdict */
 .verdict { display: grid; gap: 8px; font-size: 17px; line-height: 1.45; }
 .verdict:empty { display: none; }
+.verdict { scroll-margin-bottom: 96px; }
 .verdict p { margin: 0; }
 .verdict .head { font-size: clamp(24px, 4.4vw, 32px); line-height: 1.1; }
 .verdict.lost { border-left: 3px solid var(--blood); padding-left: 14px; }
@@ -184,3 +185,6 @@ button:focus-visible, a:focus-visible, canvas:focus-visible, .folio:focus-visibl
   .folio, .btn, .pip { transition: none; }
   .folio:hover { transform: none; }
 }
+
+/* Ink threads and ash fly over the whole page. */
+.fx-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 30; }

@@ -1,6 +1,6 @@
 import { Sfx } from '../../src/audio';
 import { createServices } from '../../src/app';
-import type { Services } from '../../src/app';
+import type { FxApi, Services } from '../../src/app';
 import type { SceneApi } from '../../src/render/scene';
 import type { StorageLike } from '../../src/storage';
 
@@ -54,10 +54,36 @@ export function stubScene(): StubScene {
   return scene as unknown as StubScene;
 }
 
+export interface StubFx extends FxApi {
+  threads: { from: { x: number; y: number }; to: { x: number; y: number }; ms: number; color: string }[];
+  ashed: { left: number; top: number; width: number; height: number }[];
+}
+
+export function stubFx(reduced: () => boolean): StubFx {
+  const fx: StubFx = {
+    threads: [],
+    ashed: [],
+    thread(from, to, options) {
+      if (reduced()) return false;
+      fx.threads.push({ from, to, ms: options.ms, color: options.color });
+      return true;
+    },
+    ash(rect) {
+      if (reduced()) return false;
+      fx.ashed.push(rect);
+      return true;
+    },
+    resize: () => {},
+    stop: () => {},
+  };
+  return fx;
+}
+
 export interface TestServices {
   services: Services;
   storage: MemoryStorage;
   scenes: StubScene[];
+  fx: StubFx;
   sfx: Sfx;
   reduced: { value: boolean };
 }
@@ -66,16 +92,18 @@ export function testServices(options: { reduced?: boolean; storage?: MemoryStora
   const storage = options.storage ?? new MemoryStorage();
   const scenes: StubScene[] = [];
   const reduced = { value: options.reduced ?? false };
+  const fx = stubFx(() => reduced.value);
   const sfx = new Sfx(() => null, storage.getItem('mw.muted') === '1');
   const services = createServices({
     storage,
     sfx,
     reduced: () => reduced.value,
+    makeFx: () => fx,
     makeScene: () => {
       const scene = stubScene();
       scenes.push(scene);
       return scene;
     },
   });
-  return { services, storage, scenes, sfx, reduced };
+  return { services, storage, scenes, fx, sfx, reduced };
 }

@@ -1,10 +1,13 @@
-import { SpecBook, printRule } from 'haunt-kit';
-import type { BookView, Registry, World } from 'haunt-kit';
-import type { Mount, Screen, Services } from '../app';
+import { ReplayBar, SpecBook, bookState, printRule } from 'haunt-kit';
+import type { BookView, Registry, ReplayAction, ReplayState, World } from 'haunt-kit';
+import type { FxApi, Mount, Screen, Services } from '../app';
 import { levelInfo, makeNames } from '../content';
 import type { Names } from '../content';
 import { buildWorld } from '../levels';
 import type { LevelDef } from '../levels';
+import { runNight } from '../night';
+import type { NightRun } from '../night';
+import { THREAD_MS } from '../render/fx';
 import {
   floorTiles,
   freshPlan,
@@ -25,6 +28,7 @@ import type { Plan, Selection } from '../plan';
 import type { Hit, SceneApi } from '../render/scene';
 import type { Tile } from '../render/surface';
 import { createRegistry } from '../vocab';
+import { dawnText, lossText, solveCounts } from '../wording';
 import type { PlacedItem } from '../vocab';
 import { bookViewOf } from './book-view';
 import { el, muteButton } from './dom';
@@ -45,6 +49,10 @@ class PlayScreen implements Screen {
   private keyboard: Tile;
   private keyboardOn = false;
   private grabbed: { type: PlacedItem; x: number; y: number } | null = null;
+  private phase: 'plan' | 'night' = 'plan';
+  private run: NightRun | null = null;
+  private cursor = 0;
+  private timers: ReturnType<typeof setTimeout>[] = [];
   private readonly cleanups: (() => void)[] = [];
 
   private readonly els = {
@@ -59,7 +67,14 @@ class PlayScreen implements Screen {
     live: null as unknown as HTMLElement,
     dock: null as unknown as HTMLElement,
     clear: null as unknown as HTMLButtonElement,
+    ring: null as unknown as HTMLButtonElement,
+    back: null as unknown as HTMLButtonElement,
+    bar: null as unknown as HTMLElement,
+    dawn: null as unknown as HTMLElement,
   };
+  private bar!: ReplayBar;
+  private fx!: FxApi;
+  private fxCanvas!: HTMLCanvasElement;
   private readonly book: SpecBook;
   private readonly scene: SceneApi;
   private preview: World;
@@ -84,6 +99,16 @@ class PlayScreen implements Screen {
       onActorFocus: (id) => this.setFocus(id),
     });
     this.scene = services.makeScene(this.els.canvas, this.preview);
+    this.fxCanvas = el(this.doc, 'canvas', 'fx-layer');
+    this.fxCanvas.setAttribute('aria-hidden', 'true');
+    this.doc.body.append(this.fxCanvas);
+    this.fx = services.makeFx(this.fxCanvas);
+    this.fx.resize();
+    this.bar = new ReplayBar(this.els.bar, {
+      tickWord: 'Bell',
+      intervalMs: (speed) => (speed === 2 ? 260 : 620) + (services.reduced() ? 100 : 0),
+      onChange: (state, action) => this.onReplay(state, action),
+    });
     this.wire();
     this.fit();
     this.refresh();
@@ -92,6 +117,10 @@ class PlayScreen implements Screen {
 
   destroy(): void {
     this.scene.stop();
+    this.clearTimers();
+    this.bar.destroy();
+    this.fx.stop();
+    this.fxCanvas.remove();
     for (const stop of this.cleanups.splice(0)) stop();
     this.book.destroy();
   }
@@ -143,7 +172,11 @@ class PlayScreen implements Screen {
       'aria-label',
       'The ward. Use the arrow keys to move over the floor. Enter puts down the selected item, or picks up the item on the tile. Escape lets go.',
     );
-    box.append(canvas);
+    const dawn = el(doc, 'div', 'dawn-card', 'Dawn');
+    dawn.hidden = true;
+    dawn.setAttribute('aria-hidden', 'true');
+    box.append(canvas, dawn);
+    this.els.dawn = dawn;
     this.els.box = box;
     this.els.canvas = canvas;
 
@@ -167,8 +200,20 @@ class PlayScreen implements Screen {
     clear.type = 'button';
     clear.id = 'clear';
     this.els.clear = clear;
-    plan.append(clear);
-    dock.append(plan);
+    const ring = el(doc, 'button', 'btn primary', 'Ring midnight');
+    ring.type = 'button';
+    ring.id = 'ring';
+    this.els.ring = ring;
+    plan.append(clear, ring);
+    const night = el(doc, 'div', 'dock-night');
+    const barRoot = el(doc, 'div');
+    this.els.bar = barRoot;
+    const toPlan = el(doc, 'button', 'btn', 'Back to planning');
+    toPlan.type = 'button';
+    toPlan.id = 'back-to-plan';
+    this.els.back = toPlan;
+    night.append(barRoot, toPlan);
+    dock.append(plan, night);
     this.els.dock = dock;
 
     const live = el(doc, 'div', 'sr-only');
@@ -187,6 +232,8 @@ class PlayScreen implements Screen {
       this.cleanups.push(() => target.removeEventListener(type, handler as EventListener));
     };
 
+    on(this.els.ring, 'click', () => this.ring());
+    on(this.els.back, 'click', () => this.backToPlan());
     on(clear, 'click', () => {
       this.plan = freshPlan(this.level);
       this.selection = null;
@@ -220,7 +267,7 @@ class PlayScreen implements Screen {
     // A mouse can drag a placed item to another tile. A touch taps it up and taps it down.
     this.cleanups.push(
       makeDraggable(canvas, {
-        canStart: (e) => e.pointerType === 'mouse' && this.scene.hit(e.clientX, e.clientY).item !== null,
+        canStart: (e) => this.phase === 'plan' && e.pointerType === 'mouse' && this.scene.hit(e.clientX, e.clientY).item !== null,
         ghost: () => this.itemGhost(this.grabType()),
         onStart: (x, y) => {
           const tile = this.scene.hit(x, y).tile;
@@ -258,6 +305,10 @@ class PlayScreen implements Screen {
   }
 
   private refresh(): void {
+    if (this.phase === 'night') {
+      this.show(this.cursor, 'jump');
+      return;
+    }
     this.preview = this.buildPreview();
     this.renderTray();
     this.renderBook();
@@ -266,8 +317,14 @@ class PlayScreen implements Screen {
   }
 
   private renderClock(): void {
-    for (const pip of this.els.pips) pip.classList.remove('on');
-    this.els.clockState.textContent = 'Planning';
+    const run = this.run;
+    const lit = this.phase === 'night' ? this.cursor : 0;
+    this.els.pips.forEach((pip, i) => pip.classList.toggle('on', i < lit));
+    const atEnd = !!run && this.cursor === run.bells;
+    this.els.clockState.textContent =
+      this.phase === 'plan' || !run ? 'Planning' : atEnd ? (run.outcome === 'won' ? 'Dawn' : `Caught at bell ${run.bells}`) : `Bell ${this.cursor} of ${BELLS}`;
+    this.els.dock.dataset.phase = this.phase;
+    this.els.page.dataset.phase = this.phase;
   }
 
   private renderTray(): void {
@@ -282,7 +339,7 @@ class PlayScreen implements Screen {
       button.innerHTML = ICONS[type] ?? '';
       button.append(el(doc, 'span', '', ITEM_LABEL[type] ?? type), el(doc, 'span', 'count', `${left} left`));
       button.setAttribute('aria-pressed', String(selection?.kind === 'item' && selection.type === type));
-      button.disabled = left <= 0;
+      button.disabled = left <= 0 || this.phase !== 'plan';
       button.addEventListener('click', () => this.toggleItem(type));
       this.dragSource(button, () => this.beginItemDrag(type));
       tray.append(button);
@@ -295,7 +352,7 @@ class PlayScreen implements Screen {
       button.dataset.card = String(index);
       button.append(el(doc, 'span', 'tag', inSpec ? 'Card \u00B7 in a spec' : 'Card \u00B7 tap, then pick a line'), el(doc, 'span', 'sentence', printRule('ghost', rule, this.registry)));
       button.setAttribute('aria-pressed', String(selection?.kind === 'card' && selection.card === index));
-      button.disabled = inSpec;
+      button.disabled = inSpec || this.phase !== 'plan';
       button.addEventListener('click', () => this.toggleCard(index));
       this.dragSource(button, () => this.beginCardDrag(index));
       tray.append(button);
@@ -313,6 +370,7 @@ class PlayScreen implements Screen {
 
   /** Pushes what the scene shows: the world, the pointer marks, the focus and the numerals. */
   private syncScene(): void {
+    if (this.phase === 'night') return;
     const { selection, hover, plan } = this;
     const holding = selection?.kind === 'item' ? selection : null;
     const tile = hover ?? null;
@@ -345,6 +403,7 @@ class PlayScreen implements Screen {
 
   private toggleItem(type: PlacedItem): void {
     this.services.sfx.unlock();
+    if (this.phase !== 'plan') return;
     const same = this.selection?.kind === 'item' && this.selection.type === type;
     this.selection = same ? null : { kind: 'item', type };
     this.refresh();
@@ -352,6 +411,7 @@ class PlayScreen implements Screen {
 
   private toggleCard(card: number): void {
     this.services.sfx.unlock();
+    if (this.phase !== 'plan') return;
     const same = this.selection?.kind === 'card' && this.selection.card === card;
     this.selection = same ? null : { kind: 'card', card };
     this.refresh();
@@ -396,11 +456,11 @@ class PlayScreen implements Screen {
 
   private tapBoard(hit: Hit): void {
     this.services.sfx.unlock();
-    if (this.selection?.kind === 'item') {
+    if (this.phase === 'plan' && this.selection?.kind === 'item') {
       if (hit.tile) this.placeAt(hit.tile.x, hit.tile.y);
       return;
     }
-    if (hit.item !== null && hit.tile && this.pickUp(hit.tile.x, hit.tile.y)) return;
+    if (this.phase === 'plan' && hit.item !== null && hit.tile && this.pickUp(hit.tile.x, hit.tile.y)) return;
     if (hit.actor) this.setFocus(this.focus === hit.actor ? null : hit.actor);
   }
 
@@ -434,7 +494,7 @@ class PlayScreen implements Screen {
   /** Makes a tray button a drag source. */
   private dragSource(button: HTMLButtonElement, begin: () => void): void {
     makeDraggable(button, {
-      canStart: () => !button.disabled,
+      canStart: () => !button.disabled && this.phase === 'plan',
       ghost: () => {
         const copy = button.cloneNode(true) as HTMLElement;
         copy.classList.add('drag-ghost');
@@ -504,6 +564,176 @@ class PlayScreen implements Screen {
     this.refresh();
   }
 
+  // ---- the night ----
+
+  private clearTimers(): void {
+    for (const t of this.timers.splice(0)) clearTimeout(t);
+  }
+
+  private ring(): void {
+    if (this.phase !== 'plan') return;
+    this.services.sfx.unlock();
+    this.run = runNight(this.level, this.plan, this.registry);
+    this.phase = 'night';
+    this.selection = null;
+    this.hover = null;
+    this.cursor = 0;
+    this.els.canvas.blur();
+    this.bar.reset(this.run.bells);
+    this.show(0, 'jump');
+    this.bar.dispatch({ type: 'play' });
+    this.bar.dispatch({ type: 'advance' });
+  }
+
+  private backToPlan(): void {
+    this.clearTimers();
+    this.bar.reset(0);
+    this.phase = 'plan';
+    this.run = null;
+    this.cursor = 0;
+    this.selection = null;
+    this.els.verdict.replaceChildren();
+    this.els.verdict.className = 'verdict';
+    this.els.dawn.hidden = true;
+    this.refresh();
+    this.announce('Back to planning. Your setup is as you left it.');
+  }
+
+  private onReplay(state: ReplayState, action: ReplayAction): void {
+    if (this.phase !== 'night' || !this.run || action.type === 'reset') return;
+    const forward = state.cursor === this.cursor + 1 && (action.type === 'advance' || action.type === 'step');
+    this.show(state.cursor, forward ? 'forward' : 'jump');
+  }
+
+  /**
+   * Shows the night at a cursor. What is shown is a function of the recording and the cursor. Only a step forward by
+   * one bell plays sound, threads, glides and the end sequences; any other move snaps and stays silent.
+   */
+  private show(cursor: number, how: 'forward' | 'jump'): void {
+    const run = this.run;
+    if (!run) return;
+    const { recording } = run;
+    const forward = how === 'forward';
+    const atEnd = cursor === run.bells;
+    const lost = atEnd && run.outcome === 'lost';
+    const won = atEnd && run.outcome === 'won';
+    const speed = this.bar.speed;
+    const frame = recording.frames[cursor]!;
+    const state = bookState(recording, cursor, { final: won, struck: lost ? run.struck : [] });
+    this.cursor = cursor;
+    this.clearTimers();
+
+    this.preview = frame;
+    this.book.update(
+      bookViewOf(frame, this.registry, this.names, {
+        marks: state.marks,
+        tally: state.tally,
+        bleed: new Set(state.written.map((w) => w.lineId)),
+        animate: forward,
+      }),
+    );
+
+    const chips = new Map<string, number>();
+    for (const f of state.fired) chips.set(f.actor, f.index + 1);
+    this.scene.setPhase(won ? 'dawn' : lost ? 'caught' : 'night');
+    this.scene.setNumerals(Object.fromEntries(frame.actors.map((a) => [a.id, this.names.numeral(a.id)])));
+    this.scene.setChips(chips);
+    this.scene.setMarks({ hover: null, preview: null, cursor: null, coach: null, focus: this.focus });
+    this.scene.setWorld(frame, { animate: forward, tickMs: (speed === 2 ? 260 : 620) - 60 });
+    this.renderTray();
+    this.renderClock();
+    this.renderVerdict(won, lost, forward);
+
+    if (!forward) return;
+    this.services.sfx.toll(cursor === BELLS ? 1.2 : 1);
+    let threads = 0;
+    for (const fired of state.fired) {
+      const line = this.book.lineElement(fired.lineId);
+      const to = this.scene.actorPoint(fired.actor);
+      if (!line || !to) continue;
+      const rect = line.getBoundingClientRect();
+      const girl = this.preview.actors.find((a) => a.id === fired.actor)?.kind === 'girl';
+      const drawn = this.fx.thread({ x: rect.left + 10, y: rect.top + rect.height / 2 }, to, {
+        ms: THREAD_MS[speed],
+        color: girl ? 'rgba(232, 217, 181, .9)' : 'rgba(127, 209, 199, .95)',
+      });
+      if (drawn) threads++;
+    }
+    if (threads > 0 || state.written.length > 0) this.services.sfx.scratch();
+    if (lost) this.services.sfx.sting();
+    if (won) this.dawnSequence(state.marks);
+  }
+
+  /** The dawn: the chime, and lines that never ran burn one after the other while the ones that ran turn gold. */
+  private dawnSequence(marks: ReadonlyMap<number, string>): void {
+    this.services.sfx.chime();
+    this.els.dawn.hidden = false;
+    this.els.dawn.style.animation = 'none';
+    void this.els.dawn.offsetWidth;
+    this.els.dawn.style.animation = '';
+    let order = 0;
+    for (const actor of this.preview.actors) {
+      for (const line of actor.lines) {
+        const delay = 120 * order++;
+        if (marks.get(line.id) !== 'ash') continue;
+        this.timers.push(
+          setTimeout(() => {
+            const element = this.book.lineElement(line.id);
+            if (!element) return;
+            this.fx.ash(element.getBoundingClientRect());
+            this.services.sfx.click();
+          }, delay + 450),
+        );
+      }
+    }
+  }
+
+  private renderVerdict(won: boolean, lost: boolean, forward: boolean): void {
+    const box = this.els.verdict;
+    const run = this.run;
+    box.replaceChildren();
+    box.className = 'verdict';
+    if (!run || (!won && !lost)) {
+      this.els.dawn.hidden = true;
+      return;
+    }
+    const doc = this.doc;
+    const actions = el(doc, 'div', 'actions');
+    let primary: HTMLButtonElement;
+    if (lost) {
+      const text = lossText(run);
+      box.classList.add('lost');
+      box.append(el(doc, 'p', 'head', text.headline));
+      for (const sentence of text.sentences) box.append(el(doc, 'p', '', sentence));
+      primary = el(doc, 'button', 'btn primary', 'Try again');
+      primary.id = 'retry';
+      primary.addEventListener('click', () => this.backToPlan());
+      this.els.dawn.hidden = true;
+    } else {
+      this.services.progress.markCleared(this.level.id);
+      const text = dawnText(run, solveCounts(this.level));
+      box.classList.add('won');
+      box.append(el(doc, 'p', 'head', text.headline));
+      for (const sentence of text.sentences) box.append(el(doc, 'p', '', sentence));
+      const index = this.services.levels.findIndex((l) => l.id === this.level.id);
+      const next = this.services.levels[index + 1];
+      primary = el(doc, 'button', 'btn primary', next ? `Go to ${next.id === 'prologue' ? next.name : `Night ${levelInfo(next).numeral}`}` : 'Back to the nights');
+      primary.id = 'next';
+      primary.addEventListener('click', () => {
+        window.location.hash = next ? `#/night/${next.id}` : '#/nights';
+      });
+      if (!forward) this.els.dawn.hidden = true;
+    }
+    primary.type = 'button';
+    actions.append(primary);
+    box.append(actions);
+    if (forward) {
+      this.announce(lost ? 'She is gone.' : 'Dawn. She is still asleep.');
+      primary.focus({ preventScroll: true });
+      box.scrollIntoView?.({ block: 'nearest', behavior: this.services.reduced() ? 'auto' : 'smooth' });
+    }
+  }
+
   // ---- keyboard ----
 
   private describe(tile: Tile): string {
@@ -541,8 +771,8 @@ class PlayScreen implements Screen {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
     const { x, y } = this.keyboard;
-    if (this.selection?.kind === 'item') this.placeAt(x, y);
-    else if (!this.pickUp(x, y)) {
+    if (this.phase === 'plan' && this.selection?.kind === 'item') this.placeAt(x, y);
+    else if (this.phase !== 'plan' || !this.pickUp(x, y)) {
       const actor = this.preview.actors.find((a) => a.pos.x === x && a.pos.y === y);
       if (actor) this.setFocus(this.focus === actor.id ? null : actor.id);
     }

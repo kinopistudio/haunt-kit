@@ -1,6 +1,7 @@
 import { Scene, mapInfo, pageEnvironment } from './render/scene';
 import type { SceneApi } from './render/scene';
 import { Sfx } from './audio';
+import { FxLayer } from './render/fx';
 import { LEVELS } from './levels';
 import type { LevelDef } from './levels';
 import { reducedMotion } from './motion';
@@ -17,11 +18,16 @@ export interface Services {
   levels: readonly LevelDef[];
   reduced: () => boolean;
   makeScene: (canvas: HTMLCanvasElement, world: World) => SceneApi;
+  /** The page-wide layer for ink threads and ash. */
+  makeFx: (canvas: HTMLCanvasElement) => FxApi;
   /** Mutes or unmutes: the sound, the memory and every mute button. */
   setMuted: (muted: boolean) => void;
   /** Calls `listener` when the mute setting changes. Returns a function that stops it. */
   onMute: (listener: (muted: boolean) => void) => () => void;
 }
+
+/** What the screens use of the effects layer. */
+export type FxApi = Pick<FxLayer, 'thread' | 'ash' | 'resize' | 'stop'>;
 
 /** A mounted screen. `destroy` stops its loops and listeners. */
 export interface Screen {
@@ -33,6 +39,7 @@ export interface ServiceOptions {
   sfx?: Sfx;
   reduced?: () => boolean;
   makeScene?: Services['makeScene'];
+  makeFx?: Services['makeFx'];
 }
 
 export function createServices(options: ServiceOptions = {}): Services {
@@ -48,6 +55,14 @@ export function createServices(options: ServiceOptions = {}): Services {
     makeScene:
       options.makeScene ??
       ((canvas, world) => new Scene(canvas, mapInfo(world), () => canvas.ownerDocument.createElement('canvas'), pageEnvironment(canvas, reduced))),
+    makeFx:
+      options.makeFx ??
+      ((canvas) =>
+        new FxLayer(canvas, {
+          reduced,
+          dpr: () => globalThis.devicePixelRatio || 1,
+          viewport: () => ({ width: globalThis.innerWidth, height: globalThis.innerHeight }),
+        })),
     setMuted(muted) {
       sfx.setMuted(muted);
       progress.setMuted(muted);
