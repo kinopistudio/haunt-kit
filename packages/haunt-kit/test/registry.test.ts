@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Registry, RegistryError } from '../src/index';
-import type { ActionDef, ConditionDef } from '../src/index';
+import type { ActionDef, ConditionDef, ProhibitionDef } from '../src/index';
 
 const cond = (id: string, pattern: string, extra: Partial<ConditionDef> = {}): ConditionDef => ({
   id,
@@ -121,5 +121,39 @@ describe('registry', () => {
 
   it('R2.7: a malformed property id is rejected', () => {
     throwsRegistryError(() => new Registry().addProperty({ id: 'Bad Id', description: '', check: () => null }), 'Bad Id');
+  });
+});
+
+describe('registry: prohibitions', () => {
+  const prohibit = (id: string, pattern: string): ProhibitionDef => ({ id, pattern, occurs: () => true });
+
+  it('S6.4: a registered prohibition is found by id and by phrase', () => {
+    const r = new Registry().addProhibition(prohibit('hop', 'hop')).addProhibition(prohibit('be_lit', 'be lit'));
+    expect(r.prohibition('be_lit')?.pattern).toBe('be lit');
+    expect(r.matchProhibition('  BE   lit ')?.id).toBe('be_lit');
+    expect(r.matchProhibition('be dark')).toBeUndefined();
+    expect(r.prohibition('missing')).toBeUndefined();
+    expect(r.prohibitions().map((p) => p.id)).toEqual(['hop', 'be_lit']);
+  });
+
+  it('S6.4: a new registry has no prohibitions', () => {
+    expect(new Registry().prohibitions()).toEqual([]);
+  });
+
+  it('S6.4: a reused id, a reused pattern, a malformed id or pattern, and {n} are rejected with the id named', () => {
+    const r = new Registry().addProhibition(prohibit('hop', 'hop'));
+    throwsRegistryError(() => r.addProhibition(prohibit('hop', 'skip')), 'hop');
+    throwsRegistryError(() => r.addProhibition(prohibit('skip', 'hop')), 'skip');
+    throwsRegistryError(() => r.addProhibition(prohibit('Bad', 'bad')), 'Bad');
+    throwsRegistryError(() => r.addProhibition(prohibit('comma', 'a, b')), 'comma');
+    throwsRegistryError(() => r.addProhibition(prohibit('param', 'wait {n}')), 'param');
+    expect(r.prohibitions().map((p) => p.id)).toEqual(['hop']);
+  });
+
+  it('S6.4: a property id may start with a capital letter, but not contain a space', () => {
+    const r = new Registry().addProperty({ id: 'S1', description: 'first', check: () => null });
+    expect(r.property('S1')?.description).toBe('first');
+    throwsRegistryError(() => r.addProperty({ id: '1S', description: '', check: () => null }), '1S');
+    throwsRegistryError(() => r.addProperty({ id: 'S 2', description: '', check: () => null }), 'S 2');
   });
 });

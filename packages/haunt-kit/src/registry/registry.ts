@@ -1,5 +1,5 @@
 import { ALWAYS } from '../grammar/types';
-import type { ActionDef, ConditionDef, PropertyDef } from './types';
+import type { ActionDef, ConditionDef, PropertyDef, ProhibitionDef } from './types';
 
 export class RegistryError extends Error {
   constructor(
@@ -12,6 +12,8 @@ export class RegistryError extends Error {
 }
 
 const ID_RE = /^[a-z][a-z0-9_]*$/;
+/** Property ids may start with a capital letter, so that safety rules can be called `S1`. */
+const PROPERTY_ID_RE = /^[A-Za-z][A-Za-z0-9_]*$/;
 const WORD_RE = /^[a-z0-9][a-z0-9'-]*$/;
 const PARAM = '{n}';
 const MAX_DIGITS = 9;
@@ -28,8 +30,8 @@ interface Compiled<T> {
   key: string;
 }
 
-function validateId(id: string, what: string): void {
-  if (!ID_RE.test(id)) throw new RegistryError(`${what} id "${id}" must match ${ID_RE}`, id);
+function validateId(id: string, what: string, re: RegExp = ID_RE): void {
+  if (!re.test(id)) throw new RegistryError(`${what} id "${id}" must match ${re}`, id);
 }
 
 /** Returns the normalised pattern, whether it has `{n}`, and a matching regex. */
@@ -58,6 +60,7 @@ function compilePattern(id: string, pattern: string, allowParam: boolean): { key
 export class Registry {
   private readonly conds = new Map<string, Compiled<ConditionDef>>();
   private readonly acts = new Map<string, Compiled<ActionDef>>();
+  private readonly prohibits = new Map<string, Compiled<ProhibitionDef>>();
   private readonly props = new Map<string, PropertyDef>();
   private schedule: ConditionDef | undefined;
 
@@ -89,8 +92,19 @@ export class Registry {
     return this;
   }
 
+  addProhibition(def: ProhibitionDef): this {
+    validateId(def.id, 'prohibition');
+    if (this.prohibits.has(def.id)) throw new RegistryError(`prohibition "${def.id}" is already registered`, def.id);
+    const c = compilePattern(def.id, def.pattern, false);
+    for (const other of this.prohibits.values()) {
+      if (other.key === c.key) throw new RegistryError(`prohibition "${def.id}" reuses the pattern of "${other.def.id}"`, def.id);
+    }
+    this.prohibits.set(def.id, { def, regex: c.regex, hasParam: false, key: c.key });
+    return this;
+  }
+
   addProperty(def: PropertyDef): this {
-    validateId(def.id, 'property');
+    validateId(def.id, 'property', PROPERTY_ID_RE);
     if (this.props.has(def.id)) throw new RegistryError(`property "${def.id}" is already registered`, def.id);
     this.props.set(def.id, def);
     return this;
@@ -102,6 +116,10 @@ export class Registry {
 
   action(id: string): ActionDef | undefined {
     return this.acts.get(id)?.def;
+  }
+
+  prohibition(id: string): ProhibitionDef | undefined {
+    return this.prohibits.get(id)?.def;
   }
 
   property(id: string): PropertyDef | undefined {
@@ -125,6 +143,12 @@ export class Registry {
     return undefined;
   }
 
+  matchProhibition(text: string): ProhibitionDef | undefined {
+    const key = normalizePhrase(text);
+    for (const c of this.prohibits.values()) if (c.regex.test(key)) return c.def;
+    return undefined;
+  }
+
   /** The condition that triggers scheduled write sentences, if one is registered. */
   get scheduleCondition(): ConditionDef | undefined {
     return this.schedule;
@@ -141,6 +165,10 @@ export class Registry {
 
   actions(): readonly ActionDef[] {
     return [...this.acts.values()].map((c) => c.def);
+  }
+
+  prohibitions(): readonly ProhibitionDef[] {
+    return [...this.prohibits.values()].map((c) => c.def);
   }
 
   properties(): readonly PropertyDef[] {
