@@ -2,7 +2,7 @@
 
 Run the tests and the build after each task, fix failures, tick the box, and commit with `spec(task N.N): <short description>`. Do not push. Do not copy code from `reference/prototype`; reimplement from `requirements.md` and `design.md`. Keep game words out of `packages/haunt-kit`.
 
-- [ ] 1.1 Recording
+- [x] 1.1 Recording
   - `Recording` in `trace/types.ts`, `recordRun` in `engine/record.ts`, exports. Add `happy-dom` as a dev dependency for the DOM tests that follow.
   - Tests: frames and traces line up, the input world is untouched, frames share no state, a non-running world, equality with `run` on a clone.
   - _Requirements: U2.1, U2.2, U2.3, U2.4_

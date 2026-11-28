@@ -1,4 +1,4 @@
-import type { Pos, WorldStatus } from '../world/types';
+import type { Pos, World, WorldStatus } from '../world/types';
 
 /** A scheduled write that was applied at the start of a tick. `index` is the 0-based position of the new line. */
 export interface EventTrace {
@@ -47,5 +47,15 @@ export interface TickTrace {
   events: EventTrace[];
   turns: TurnTrace[];
   violation: ViolationTrace | null;
+  status: WorldStatus;
+}
+
+/**
+ * A run kept whole. `frames[0]` is the start world and `frames[k]` the world after tick `k`;
+ * `traces[k - 1]` is the trace of tick `k`. So `frames.length === traces.length + 1`.
+ */
+export interface Recording {
+  frames: World[];
+  traces: TickTrace[];
   status: WorldStatus;
 }
