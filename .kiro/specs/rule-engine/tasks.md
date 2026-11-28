@@ -48,7 +48,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `loadSpec` with list markers, headings and prose ignored, grouping by actor, events split out, file line numbers in errors, and case-insensitive sentence detection.
   - _Requirements: R3.8, R3.9_
 
-- [ ] 4.1 Grid parsing
+- [x] 4.1 Grid parsing
   - `parseGrid` with the default legend, combined cells, free tiles, `GridError`.
   - _Requirements: R4.1, R4.2_
 

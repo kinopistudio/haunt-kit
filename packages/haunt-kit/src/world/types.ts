@@ -54,3 +54,39 @@ export interface World {
   status: WorldStatus;
   nextLineId: number;
 }
+
+/** An item to place. `solid` defaults to false and `state` to `{}`. */
+export interface ItemInit {
+  type: string;
+  pos: Pos;
+  solid?: boolean;
+  state?: Record<string, boolean | number>;
+}
+
+/**
+ * What one grid character means. A cell may combine `actor`, `item` and `marker`.
+ * A cell with none of the four fields is plain floor. `wall` cannot be combined with the others.
+ */
+export interface CellDef {
+  wall?: boolean;
+  /** An actor of this kind starts here. */
+  actor?: string;
+  /** An item starts here. */
+  item?: Omit<ItemInit, 'pos'>;
+  /** Names this tile; `ParsedGrid.markers[name]` lists the tiles in reading order. */
+  marker?: string;
+}
+
+/** Maps one character to its meaning. `#` is a wall and `.` is plain floor unless overridden. */
+export type Legend = Record<string, CellDef>;
+
+export interface ParsedGrid {
+  map: GridMap;
+  /** Actor starts in reading order (row by row, left to right). */
+  starts: { kind: string; pos: Pos }[];
+  /** Items from the grid, in reading order. */
+  items: ItemInit[];
+  markers: Record<string, Pos[]>;
+  /** Plain floor tiles (no wall, actor, item or marker) in reading order. These are the tiles a player may use. */
+  free: Pos[];
+}
