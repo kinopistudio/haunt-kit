@@ -2,7 +2,7 @@
 
 Run the tests after each task, fix failures, tick the box, and commit with `spec(task N.N): <short description>`. Do not copy code from `reference/prototype`; use it only to produce the oracle fixtures in task 6.3.
 
-- [ ] 1.1 Root workspace files
+- [x] 1.1 Root workspace files
   - `package.json` (private, scripts `test`, `build`, `verify`), `pnpm-workspace.yaml`, `tsconfig.base.json` (strict, ES2022 modules), `scripts/verify.mjs` stub that prints a note and exits 0.
   - `pnpm test` and `pnpm build` run the matching script in every workspace package that has one.
   - _Requirements: R1.1, R1.3, R1.4, R1.5_
