@@ -58,7 +58,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `test/oracle.test.ts` with the literals: default rules fail `S2` at 2 and `S1` at 5; both fixes at line 1 are safe with 4,008,562 paths and 92% scared; fixes at line 2 and decoy only fail; the states expanded stay below 5,000; the counterexample trace shape.
   - _Requirements: S9.1, S9.2, S9.3, S9.4, S9.5_
 
-- [ ] 7.1 `pnpm verify`
+- [x] 7.1 `pnpm verify`
   - `scripts/verify.mjs` and `scripts/verify-levels.ts`: the Vite middleware loader, the table, the expectations, exit codes, the total time. `packages/haunt-kit/test/verify.test.ts` runs it and checks the exit code, the time and the numbers.
   - _Requirements: S10.1, S10.2, S10.3, S10.4_
 
