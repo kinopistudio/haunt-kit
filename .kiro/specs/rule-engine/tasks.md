@@ -25,7 +25,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - In `packages/haunt-kit/test/structure.test.ts`: package names and workspace file (R1.1), `workspace:*` links (R1.2), strict mode and the Vite build scripts (R1.3), root test script (R1.4), `scripts/verify.mjs` exit code (R1.5), app import boundaries (R1.6), forbidden globals in the engine directories (R1.7).
   - _Requirements: R1.1, R1.2, R1.3, R1.4, R1.5, R1.6, R1.7_
 
-- [ ] 2.1 Registry
+- [x] 2.1 Registry
   - `world/types.ts` and `grammar/types.ts` (types only), `registry/types.ts`, `registry/registry.ts`, `RegistryError`, pattern validation and matching.
   - Tests for registration, lookup, phrase matching, duplicates, reserved id, malformed patterns, `{n}` rules, the schedule condition and properties.
   - `apps/scare-cue/src/vocab.ts` returns an empty `Registry` and `main.ts` calls it, which shows the app builds on the kit.
