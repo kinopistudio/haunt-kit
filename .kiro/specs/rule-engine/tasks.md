@@ -21,7 +21,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Midnight Ward gets a Vitest test script. `src/vocab.ts` is added in task 6.1.
   - _Requirements: R1.1, R1.2, R1.3_
 
-- [ ] 1.5 Structure tests
+- [x] 1.5 Structure tests
   - In `packages/haunt-kit/test/structure.test.ts`: package names and workspace file (R1.1), `workspace:*` links (R1.2), strict mode and the Vite build scripts (R1.3), root test script (R1.4), `scripts/verify.mjs` exit code (R1.5), app import boundaries (R1.6), forbidden globals in the engine directories (R1.7).
   - _Requirements: R1.1, R1.2, R1.3, R1.4, R1.5, R1.6, R1.7_
 
