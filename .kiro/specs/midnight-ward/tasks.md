@@ -12,7 +12,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: an empty board loses on all three levels; the first solution of each level wins; the status equals the solver's; the struck line is the girl's line on the last tick; `burned` equals the number of lines with `fired` 0.
   - _Requirements: M4.1, M5.1, M5.3_
 
-- [ ] 1.3 Failure explanation and dawn text
+- [x] 1.3 Failure explanation and dawn text
   - `src/wording.ts`: the loss text from `explain`, the dawn text, caps and ordering, the unused-card sentence. Solve counts come from `solveLevel`.
   - Tests with literal sentences on real recordings: the shadowed card (`Line 2 of Wisp I (your card) never fired: line 1 was true first, so it shadowed it at bell 4.` with the bell read from the recording), the never-true card, Night IV's rewrite, the girl walking into a ghost (a small fixture), the cap of four, and every number re-derived from the recording.
   - _Requirements: M5.4, M6.1, M6.2, M6.3, M6.4, M6.5, M6.6, M6.7, M12.1_

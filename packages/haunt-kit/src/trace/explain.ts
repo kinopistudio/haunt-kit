@@ -114,7 +114,7 @@ export function explain(recording: Recording, registry: Registry, options: Expla
       if (!line) continue;
       findings.push({ kind: 'rewrite', tick: trace.tick, actor: event.actor, line });
       const total = recording.frames[trace.tick]?.actors.find((a) => a.id === event.actor)?.lines.length ?? 0;
-      let sentence = `At ${tickWord} ${trace.tick}, ${name(event.actor)} wrote itself a new line ${event.index + 1}: \u201c${line.text}\u201d.`;
+      let sentence = `At ${tickWord} ${trace.tick}, ${name(event.actor)} wrote itself a new line ${event.index + 1}: \u201c${line.text}\u201d`;
       if (event.index + 1 < total) sentence += ' The lines under it moved down by one.';
       sentences.push(sentence);
     }

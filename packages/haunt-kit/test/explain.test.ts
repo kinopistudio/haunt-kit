@@ -84,10 +84,10 @@ describe('explain', () => {
       [5, 'seeker', 2, 'THE seeker SHALL step toward the target.'],
     ]);
     expect(sentences[0]).toBe(
-      'At bell 3, seeker wrote itself a new line 1: \u201cTHE seeker SHALL step away from the target.\u201d. The lines under it moved down by one.',
+      'At bell 3, seeker wrote itself a new line 1: \u201cTHE seeker SHALL step away from the target.\u201d The lines under it moved down by one.',
     );
     // At bell 5 the lines are: rewrite, spec, and the new one lands at line 3, the last: nothing moved.
-    expect(sentences[1]).toBe('At bell 5, seeker wrote itself a new line 3: \u201cTHE seeker SHALL step toward the target.\u201d.');
+    expect(sentences[1]).toBe('At bell 5, seeker wrote itself a new line 3: \u201cTHE seeker SHALL step toward the target.\u201d');
   });
 
   it('U4.4: a line that never fired and was true under a line above it reads exactly like the example', () => {

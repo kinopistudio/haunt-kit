@@ -92,7 +92,7 @@ Sentence templates (the words in angle brackets come from the findings):
 | kind | sentence |
 |---|---|
 | `violation` | `<Tick> <t>: <message>` followed by ` <Actor> was running line <n>: “<text>”` when a line ran. Apps may replace this one with their own words. |
-| `rewrite` | `At <tick> <t>, <actor> wrote itself a new line <n>: “<text>”. The lines under it moved down by one.` |
+| `rewrite` | `At <tick> <t>, <actor> wrote itself a new line <n>: “<text>” The lines under it moved down by one.` (the last sentence only when lines are below the new one) |
 | `shadowed` | `Line <i> of <actor> [(<note>)] never fired: line <j> was true first, so it shadowed it at <tick> <t>.` |
 | `never_true` | `Line <i> of <actor> [(<note>)] never fired: “<condition>” was never true when it was checked.` |
 
