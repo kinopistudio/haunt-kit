@@ -7,7 +7,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: frames and traces line up, the input world is untouched, frames share no state, a non-running world, equality with `run` on a clone.
   - _Requirements: U2.1, U2.2, U2.3, U2.4_
 
-- [ ] 1.2 Line statistics
+- [x] 1.2 Line statistics
   - `trace/stats.ts` with `lineStats` and `LineStat`.
   - Tests on small worlds: a fired line, a shadowed line, an idle line, a rewrite that shifts indexes, a scripted turn.
   - _Requirements: U3.1, U3.2, U3.3, U3.4, U3.5_
