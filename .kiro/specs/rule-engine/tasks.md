@@ -80,7 +80,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `apps/midnight-ward/src/vocab.ts`: registry, legend, turn order, horizon, `makeItem`. Unit tests for each condition and action, the property, and the `a ghost is near` rule.
   - _Requirements: R6.1, R6.2, R6.3, R6.9_
 
-- [ ] 6.2 Levels and character specs
+- [x] 6.2 Levels and character specs
   - `apps/midnight-ward/specs/{prologue,night-1,night-4}.md`, `src/levels.ts`, and a `buildWorld(level, placement, inserts)` helper. Test that every spec file loads with no errors.
   - _Requirements: R6.6_
 
