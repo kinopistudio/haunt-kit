@@ -32,7 +32,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: tile centres round-trip at several map sizes and canvas sizes (property test), points outside give `null`, the dollhouse fits canvases from 320 px wide, the pitch is a constant, no function takes a pitch from outside.
   - _Requirements: M8.1, M8.6, M8.7, M8.11_
 
-- [ ] 2.2 Floor, walls and sprites
+- [x] 2.2 Floor, walls and sprites
   - `src/render/floor.ts`, `walls.ts`, `sprites.ts`: the floor texture and the strip projection, wall heights and faces, upright sprites with contact shadows, the depth sort.
   - Tests with a fake 2D context: strips of growing size, back wall taller than side taller than front, a shadow ellipse before each sprite, wall and sprite order by depth.
   - _Requirements: M8.2, M8.3, M8.4, M8.5_
