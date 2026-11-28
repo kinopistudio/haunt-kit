@@ -84,7 +84,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `apps/midnight-ward/specs/{prologue,night-1,night-4}.md`, `src/levels.ts`, and a `buildWorld(level, placement, inserts)` helper. Test that every spec file loads with no errors.
   - _Requirements: R6.6_
 
-- [ ] 6.3 Oracle fixtures and replay
+- [x] 6.3 Oracle fixtures and replay
   - A temporary script runs the prototype engine on the five levels (Night II and III as test fixtures) and writes `test/fixtures/oracle.json` with its source commit. The script is deleted afterwards. The test replays every scenario through the kit and compares it. A second test checks that an empty board is violated on all five levels.
   - _Requirements: R6.4, R6.5_
 
