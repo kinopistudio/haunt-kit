@@ -132,7 +132,7 @@ Requirement ids (`U1.1`, `U1.2`, ...) are used as test-name prefixes, for exampl
 
 #### Acceptance Criteria
 
-- **U9.1** THE book styles SHALL use the palette of `game-feel.md` exactly (ink `#0d0b0a`, parchment `#e8d9b5`, amber `#f2a541`, teal `#7fd1c7`) and SHALL use blood red `#8c1c13` only for the `struck` mark and for failure elements.
+- **U9.1** THE book styles SHALL use the palette of `game-feel.md` exactly (ink `#0d0b0a`, parchment `#e8d9b5`, amber `#f2a541`, teal `#7fd1c7`) and SHALL use blood red `#8c1c13` only for the `struck` mark, for the red ink of a rewritten line, and for failure elements.
 - **U9.2** THE styles SHALL contain a `prefers-reduced-motion: reduce` block that turns off every animation and transition of the book.
 - **U9.3** WHEN `installSpecBookStyles(document)` is called more than once, THE function SHALL add one style element.
 - **U9.4** THE buttons of the book and of the replay bar SHALL be at least 36 px tall and SHALL have a visible focus outline.

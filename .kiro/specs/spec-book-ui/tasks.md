@@ -26,7 +26,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - `ui/replay.ts` with `replayReduce`. Property test: any action sequence keeps `0 <= cursor <= length`.
   - _Requirements: U6.1, U6.2, U6.3, U6.4, U6.5, U6.6_
 
-- [ ] 3.1 Book model and styles
+- [x] 3.1 Book model and styles
   - `ui/model.ts` (`BookView`, `bookModel`, glyphs, labels) and `ui/styles.ts` (`SPEC_BOOK_CSS`, `installSpecBookStyles`).
   - Tests: rows, numbers, glyph for every mark, slots `n + 1`, remove controls, tally text, palette and the reduced-motion block in the CSS, idempotent install.
   - _Requirements: U7.1, U7.2, U7.3, U7.4, U7.5, U9.1, U9.2, U9.3, U9.4_
