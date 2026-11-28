@@ -165,6 +165,7 @@ button:focus-visible, a:focus-visible, canvas:focus-visible, .folio:focus-visibl
 
 @media (max-width: 860px) {
   .stage { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .verdict { scroll-margin-bottom: 230px; }
   .lesson { font-size: 16px; }
   .coach .text { font-size: 16px; }
   .dock-plan, .dock-night { justify-content: stretch; }
@@ -172,6 +173,10 @@ button:focus-visible, a:focus-visible, canvas:focus-visible, .folio:focus-visibl
   .bar-tools { width: 100%; }
 }
 @media (max-width: 420px) {
+  .dock .hk-start, .dock .hk-end { display: none; }
+  .dock .hk-replay { gap: 6px; }
+  .dock-night { gap: 6px; }
+  .dock-night > .btn { flex: 1 1 100%; }
   .play { padding-inline: 12px; }
   .dock { margin: 0 -12px; padding-inline: 12px; }
   .folios { grid-template-columns: minmax(0, 1fr); }

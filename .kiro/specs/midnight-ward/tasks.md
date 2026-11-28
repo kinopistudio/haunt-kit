@@ -72,7 +72,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests in `happy-dom`: the first visit shows the coach, the target element has the pulse class, hiding stores it, a later visit has no coach, clearing the level stores it, Night IV has none.
   - _Requirements: M7.1, M7.2, M7.6_
 
-- [ ] 5.1 Small screens and accessibility
+- [x] 5.1 Small screens and accessibility
   - The 375 px layout, the sticky dock, touch targets, focus styles, `lang`, reduced motion. Tests on the stylesheet text and the DOM (breakpoint rules, 36 px and 44 px targets, focus-visible, the live region).
   - _Requirements: M11.1, M11.2, M11.3, M11.4_
 

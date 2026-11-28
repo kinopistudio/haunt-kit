@@ -660,7 +660,7 @@ class PlayScreen implements Screen {
     const selector = step.target ? this.selectorOf(step.target) : null;
     const target = selector ? this.root.querySelector<HTMLElement>(selector) : null;
     target?.classList.add('pulse');
-    if (target && step.id !== this.coachId && target.scrollIntoView) {
+    if (target && this.coachId !== '' && step.id !== this.coachId && target.scrollIntoView) {
       const rect = target.getBoundingClientRect();
       const height = this.doc.defaultView?.innerHeight ?? 800;
       if (rect.top < 0 || rect.bottom > height - 90) target.scrollIntoView({ block: 'center', behavior: this.services.reduced() ? 'auto' : 'smooth' });
