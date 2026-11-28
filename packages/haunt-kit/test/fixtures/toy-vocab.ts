@@ -1,4 +1,4 @@
-import { Registry, distance, stepAway, stepToward } from '../../src/index';
+import { Registry, distance, firedAction, stepAway, stepToward } from '../../src/index';
 import type { Actor, EvalContext, Legend, ParsedGrid, PropertyDef, SpecSet, World, WorldConfig } from '../../src/index';
 import { createWorld, loadSpec, parseGrid } from '../../src/index';
 
@@ -48,6 +48,7 @@ export function createToyRegistry(): Registry {
       },
     })
     .addProhibition({ id: 'be_on', pattern: 'be on', occurs: (ctx) => switches(ctx).some((s) => s.state.on === true) })
+    .addProhibition({ id: 'flip', pattern: 'flip the switch', occurs: (ctx) => firedAction(ctx, 'flip') })
     .addAction({ id: 'rest', pattern: 'do nothing', run: () => {} })
     .addAction({
       id: 'flip',

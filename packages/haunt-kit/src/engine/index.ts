@@ -1,3 +1,4 @@
 export { run, tick } from './tick';
 export type { TickOptions } from './tick';
-export { firedRule } from './fired';
+export { firedAction, firedRule } from './fired';
+export { registerSafety, safetyProperty } from './safety';

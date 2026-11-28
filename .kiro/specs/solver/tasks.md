@@ -21,7 +21,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Tests that a call without options behaves as before (the rule-engine suite stays green).
   - _Requirements: S5.1, S5.2, S5.3, S5.4, S5.5_
 
-- [ ] 2.2 Safety properties
+- [x] 2.2 Safety properties
   - `registerSafety(registry, rules)` in `src/engine/safety.ts`. Tests with the toy vocabulary: a turn-based prohibition, a state-based prohibition, the condition evaluated for the subject actor, message and actors, ids `S1`, `S2`.
   - _Requirements: S6.7_
 
