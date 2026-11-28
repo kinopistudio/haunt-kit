@@ -11,7 +11,7 @@ import { WALL_BACK, WALL_FRONT } from './geometry';
 // and `zoom / depth` is the number of pixels one tile covers at that depth.
 
 export const PITCH = 1.05;
-export const DISTANCE = 1.7;
+export const DISTANCE = 3.2;
 /** How much of the canvas the dollhouse fills. */
 export const FILL = 0.96;
 

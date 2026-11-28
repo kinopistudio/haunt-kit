@@ -68,6 +68,9 @@ interface ActorView {
 const ease = (t: number): number => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
 
+/** What the screens use of a scene. Tests give screens a stub with this shape. */
+export type SceneApi = Pick<Scene, 'resize' | 'setWorld' | 'setChips' | 'setNumerals' | 'setMarks' | 'setPhase' | 'start' | 'stop' | 'hit' | 'actorPoint' | 'size' | 'camera' | 'currentPhase'>;
+
 /** What the scene needs to know about a world's map: its size, walls and the bed. */
 export function mapInfo(world: World): MapInfo {
   return { w: world.map.w, h: world.map.h, walls: world.map.walls, bed: world.markers.bed?.[0] ?? null };

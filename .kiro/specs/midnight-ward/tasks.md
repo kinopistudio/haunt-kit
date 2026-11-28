@@ -52,7 +52,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests with a fake `AudioContext`: nothing is scheduled while muted or before `unlock`, no throw when Web Audio is missing, the dawn chime and the toll schedule oscillators, and the setting is kept through `Progress`.
   - _Requirements: M10.1, M10.2, M10.3_
 
-- [ ] 4.1 App shell, title and level select
+- [x] 4.1 App shell, title and level select
   - `index.html` (fonts, viewport, favicon), `src/styles.css`, `src/main.ts`, `src/screens/title.ts`, `src/screens/levels.ts`. Palette and type from `game-feel.md`.
   - Tests in `happy-dom`: the title has the name, tagline, Begin and mute toggle; the level select lists three levels with concepts and ✓ for cleared ones, none locked; routing mounts and destroys screens; the stylesheet uses the palette and fonts.
   - _Requirements: M2.1, M2.2, M2.3, M2.5, M11.5_
