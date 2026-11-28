@@ -57,7 +57,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests in `happy-dom`: the title has the name, tagline, Begin and mute toggle; the level select lists three levels with concepts and ✓ for cleared ones, none locked; routing mounts and destroys screens; the stylesheet uses the palette and fonts.
   - _Requirements: M2.1, M2.2, M2.3, M2.5, M11.5_
 
-- [ ] 4.2 Play screen: plan phase
+- [x] 4.2 Play screen: plan phase
   - `src/screens/play.ts` (plan half): the layout, tray, tap placement, drag and drop for items and cards, slots in the book, remove controls, range diamonds, clear board, keyboard cursor, the live region.
   - Tests in `happy-dom` with a stub scene: select and place, refuse a wall, take back, drag to a tile and cancel, select a card and choose a slot, drag over a slot, remove a card, clear, keyboard placement, the announcements.
   - _Requirements: M3.5, M3.6, M3.7, M3.9, M3.12_
