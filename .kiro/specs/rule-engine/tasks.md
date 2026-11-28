@@ -36,7 +36,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `test/fixtures/toy-vocab.ts`: a neutral registry used by the core tests.
   - _Requirements: R3.1, R3.2, R3.3, R3.4, R3.6_
 
-- [ ] 3.2 Print rules and round trip
+- [x] 3.2 Print rules and round trip
   - `printRule`; property test that printing then parsing returns an equal rule; property test that `parseSentence` never throws.
   - _Requirements: R3.6, R3.7_
 

@@ -16,9 +16,9 @@ interface Form {
 }
 
 const SRC = {
-  WHEN: '^(WHEN) (.+?), (THE) (.+?) (SHALL) (.+)\\.$',
-  IF: '^(IF) (.+?), (THEN) (THE) (.+?) (SHALL) (.+)\\.$',
-  '': '^(THE) (.+?) (SHALL) (.+)\\.$',
+  WHEN: '^(WHEN) +(.+?) *, *(THE) +(.+?) +(SHALL) +(.+?) *\\.$',
+  IF: '^(IF) +(.+?) *, *(THEN) +(THE) +(.+?) +(SHALL) +(.+?) *\\.$',
+  '': '^(THE) +(.+?) +(SHALL) +(.+?) *\\.$',
 } as const;
 
 const FORMS: Form[] = [
