@@ -22,7 +22,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests with a fake storage that works, throws, and is missing.
   - _Requirements: M1.4, M2.3, M2.4, M7.6_
 
-- [ ] 1.5 Coach logic
+- [x] 1.5 Coach logic
   - `src/coach.ts` and the hints in `src/content.ts`: `coachStep` for the Prologue and Night I, none for the other levels.
   - Tests: the step for every plan state, the shadow warning with the remove target, retry after a loss, next after a win, and that each hint wins when run.
   - _Requirements: M7.1, M7.2, M7.3, M7.4, M7.5_

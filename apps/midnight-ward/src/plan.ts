@@ -24,6 +24,9 @@ export interface Plan {
   lists: Record<string, ListEntry[]>;
 }
 
+/** What the player has picked up from the tray and not yet put down. */
+export type Selection = { kind: 'item'; type: PlacedItem } | { kind: 'card'; card: number };
+
 interface Layout {
   actors: { id: string; kind: string; lines: number }[];
   free: { x: number; y: number }[];
