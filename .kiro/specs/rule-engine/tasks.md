@@ -56,7 +56,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `distance`, `isBlocked`, `stepToward`, `stepAway`, with property tests.
   - _Requirements: R4.3, R4.4, R4.5, R4.6_
 
-- [ ] 4.3 World creation
+- [x] 4.3 World creation
   - `createWorld` (turn order, ids, validation, `WorldError`), `insertLine`, `cloneWorld`.
   - _Requirements: R4.7, R4.8, R4.9, R4.10_
 
