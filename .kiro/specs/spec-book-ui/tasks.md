@@ -22,7 +22,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: cursor 0, `lit`/`false`/`shadowed`/`skipped`, `fired` and `written` lists, tallies, `final`, `struck`, the `RangeError`. Property test: the tally never decreases as the cursor grows.
   - _Requirements: U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8_
 
-- [ ] 2.2 Replay state
+- [x] 2.2 Replay state
   - `ui/replay.ts` with `replayReduce`. Property test: any action sequence keeps `0 <= cursor <= length`.
   - _Requirements: U6.1, U6.2, U6.3, U6.4, U6.5, U6.6_
 
