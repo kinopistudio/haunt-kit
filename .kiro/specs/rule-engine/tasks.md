@@ -31,7 +31,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `apps/scare-cue/src/vocab.ts` returns an empty `Registry` and `main.ts` calls it, which shows the app builds on the kit.
   - _Requirements: R2.1, R2.2, R2.3, R2.4, R2.5, R2.6, R2.7_
 
-- [ ] 3.1 Parse rule sentences
+- [x] 3.1 Parse rule sentences
   - `parseSentence` for the three rule forms, with `n` capture, case rules, and error results with columns.
   - `test/fixtures/toy-vocab.ts`: a neutral registry used by the core tests.
   - _Requirements: R3.1, R3.2, R3.3, R3.4, R3.6_
