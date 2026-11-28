@@ -17,7 +17,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests with literal sentences on real recordings: the shadowed card (`Line 2 of Wisp I (your card) never fired: line 1 was true first, so it shadowed it at bell 4.` with the bell read from the recording), the never-true card, Night IV's rewrite, the girl walking into a ghost (a small fixture), the cap of four, and every number re-derived from the recording.
   - _Requirements: M5.4, M6.1, M6.2, M6.3, M6.4, M6.5, M6.6, M6.7, M12.1_
 
-- [ ] 1.4 Route, storage and progress
+- [x] 1.4 Route, storage and progress
   - `src/route.ts`, `src/storage.ts`: hash parsing, safe `localStorage` with a memory fallback, cleared levels, coach seen, muted.
   - Tests with a fake storage that works, throws, and is missing.
   - _Requirements: M1.4, M2.3, M2.4, M7.6_
