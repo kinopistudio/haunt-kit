@@ -64,7 +64,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `trace/types.ts`; `tick` with top-to-bottom evaluation, first true line wins, no-true-line case, shared state between actors of one tick, shadowed lines.
   - _Requirements: R5.2, R5.3, R5.4, R5.5, R5.11_
 
-- [ ] 5.2 Scheduled events
+- [x] 5.2 Scheduled events
   - Clock advance, events applied before turns, insertion at a clamped line for every actor of the kind, event trace.
   - _Requirements: R5.1, R5.6_
 

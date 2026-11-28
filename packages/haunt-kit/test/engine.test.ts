@@ -179,3 +179,103 @@ describe('tick: trace shape', () => {
     expect(t.turns[0]!.to).toEqual({ x: 2, y: 1 });
   });
 });
+
+describe('tick: scheduled events', () => {
+  const rows = ['#########', '#S.....T#', '#.s.....#', '#########'];
+  const WRITE = (tick: number, rule: string, line: number) => `WHEN the clock strikes ${tick}, THE seeker SHALL write "${rule}" at line ${line}.`;
+
+  it('R5.1: each tick advances the clock by one', () => {
+    const w = toyWorld(rows, '', registry);
+    expect(w.tick).toBe(0);
+    expect(must(tick(w, registry)).tick).toBe(1);
+    expect(must(tick(w, registry)).tick).toBe(2);
+    expect(w.tick).toBe(2);
+  });
+
+  it('R5.1: an event is applied only on its tick', () => {
+    const spec = ['THE seeker SHALL do nothing.', WRITE(3, 'THE seeker SHALL flip the switch.', 1)].join('\n');
+    const w = toyWorld(rows, spec, registry);
+    expect(must(tick(w, registry)).events).toEqual([]);
+    expect(must(tick(w, registry)).events).toEqual([]);
+    expect(w.actors[0]!.lines).toHaveLength(1);
+    const t3 = must(tick(w, registry));
+    expect(t3.events).toHaveLength(1);
+    expect(w.actors[0]!.lines).toHaveLength(2);
+    expect(must(tick(w, registry)).events).toEqual([]);
+    expect(w.actors[0]!.lines).toHaveLength(2);
+  });
+
+  it('R5.1: events are applied before any actor takes a turn, so the new line can fire the same tick', () => {
+    const spec = ['THE seeker SHALL do nothing.', WRITE(2, 'THE seeker SHALL flip the switch.', 1)].join('\n');
+    const w = toyWorld(rows, spec, registry, { turnOrder: ['target', 'seeker'] });
+    must(tick(w, registry));
+    expect(w.items[0]!.state.on).toBe(false);
+    const t2 = must(tick(w, registry));
+    const seeker = t2.turns.find((x) => x.actor === 'seeker')!;
+    expect(seeker.fired).toBe(0);
+    expect(seeker.firedId).toBe(t2.events[0]!.lineId);
+    expect(seeker.shadowed).toEqual([1]);
+    expect(w.items[0]!.state.on).toBe(true);
+  });
+
+  it('R5.1: events at the same tick are applied in declaration order', () => {
+    const spec = [
+      'THE seeker SHALL do nothing.',
+      WRITE(1, 'THE seeker SHALL step toward the target.', 1),
+      WRITE(1, 'THE seeker SHALL flip the switch.', 1),
+    ].join('\n');
+    const w = toyWorld(rows, spec, registry);
+    const t = must(tick(w, registry));
+    expect(t.events.map((e) => e.index)).toEqual([0, 0]);
+    expect(w.actors[0]!.lines.map((l) => l.rule.act)).toEqual(['flip', 'approach', 'rest']);
+    expect(t.turns[0]!.fired).toBe(0);
+  });
+
+  it('R5.6: the rule is inserted at the 1-based line and the lines below shift down', () => {
+    const spec = ['THE seeker SHALL do nothing.', 'THE seeker SHALL flip the switch.', WRITE(1, 'THE seeker SHALL step toward the target.', 2)].join('\n');
+    const w = toyWorld(rows, spec, registry);
+    const before = w.actors[0]!.lines.map((l) => l.id);
+    const t = must(tick(w, registry));
+    expect(w.actors[0]!.lines.map((l) => l.rule.act)).toEqual(['rest', 'approach', 'flip']);
+    expect(w.actors[0]!.lines[0]!.id).toBe(before[0]);
+    expect(w.actors[0]!.lines[2]!.id).toBe(before[1]);
+    expect(t.events).toEqual([{ actor: 'seeker', kind: 'seeker', index: 1, lineId: w.actors[0]!.lines[1]!.id }]);
+  });
+
+  it('R5.6: a line past the end appends', () => {
+    const spec = ['THE seeker SHALL do nothing.', WRITE(1, 'THE seeker SHALL flip the switch.', 9)].join('\n');
+    const w = toyWorld(rows, spec, registry);
+    const t = must(tick(w, registry));
+    expect(w.actors[0]!.lines.map((l) => l.rule.act)).toEqual(['rest', 'flip']);
+    expect(t.events[0]!.index).toBe(1);
+  });
+
+  it('R5.6: the new line has origin rewrite and a fresh id', () => {
+    const spec = ['THE seeker SHALL do nothing.', WRITE(1, 'THE seeker SHALL flip the switch.', 1)].join('\n');
+    const w = toyWorld(rows, spec, registry);
+    const old = w.actors[0]!.lines[0]!;
+    must(tick(w, registry));
+    const added = w.actors[0]!.lines[0]!;
+    expect(added.origin).toBe('rewrite');
+    expect(added.id).not.toBe(old.id);
+    expect(old.origin).toBe('spec');
+  });
+
+  it('R5.6: every actor of that kind gets the line, and other kinds do not', () => {
+    const spec = ['THE seeker SHALL do nothing.', WRITE(1, 'THE seeker SHALL flip the switch.', 1)].join('\n');
+    const w = toyWorld(['#########', '#S.S.S.T#', '#########'], spec, registry);
+    const t = must(tick(w, registry));
+    expect(t.events.map((e) => e.actor)).toEqual(['seeker', 'seeker-2', 'seeker-3']);
+    expect(w.actors.filter((a) => a.kind === 'seeker').every((a) => a.lines[0]!.origin === 'rewrite')).toBe(true);
+    expect(w.actors.find((a) => a.kind === 'target')!.lines).toEqual([]);
+    expect(new Set(t.events.map((e) => e.lineId)).size).toBe(3);
+  });
+
+  it('R5.6: a written line stays for the rest of the night', () => {
+    const spec = ['THE seeker SHALL do nothing.', WRITE(1, 'THE seeker SHALL flip the switch.', 1)].join('\n');
+    const w = toyWorld(rows, spec, registry);
+    for (let i = 0; i < 4; i++) must(tick(w, registry));
+    expect(w.items[0]!.state.on).toBe(false); // flipped four times
+    expect(w.actors[0]!.lines).toHaveLength(2);
+  });
+});

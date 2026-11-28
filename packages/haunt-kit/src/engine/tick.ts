@@ -3,6 +3,7 @@ import { ALWAYS } from '../grammar/types';
 import type { Registry } from '../registry/registry';
 import type { EvalContext } from '../registry/types';
 import type { TickTrace, TurnTrace } from '../trace/types';
+import { insertLine } from '../world/create';
 import type { Actor, World } from '../world/types';
 
 function holds(ctx: EvalContext, rule: Rule, registry: Registry): boolean {
@@ -64,6 +65,17 @@ export function tick(world: World, registry: Registry): TickTrace | null {
   if (world.status !== 'running') return null;
   world.tick += 1;
   const trace: TickTrace = { tick: world.tick, events: [], turns: [], violation: null, status: world.status };
+
+  // Scheduled writes come first, in declaration order, so that every actor reads its new spec this tick.
+  for (const event of world.events) {
+    if (event.tick !== world.tick) continue;
+    for (const actor of world.actors) {
+      if (actor.kind !== event.actor) continue;
+      const index = Math.min(event.line - 1, actor.lines.length);
+      const line = insertLine(world, actor.id, index, event.rule, 'rewrite');
+      trace.events.push({ actor: actor.id, kind: actor.kind, index, lineId: line.id });
+    }
+  }
 
   for (const actor of world.actors) {
     trace.turns.push(takeTurn(world, registry, actor));
