@@ -4,6 +4,7 @@ import night1Spec from '../specs/night-1.md?raw';
 import night4Spec from '../specs/night-4.md?raw';
 import prologueSpec from '../specs/prologue.md?raw';
 import { HORIZON, LEGEND, TURN_ORDER, createRegistry } from './vocab';
+import type { PlacedItem } from './vocab';
 
 export interface LevelDef {
   id: string;
@@ -12,6 +13,10 @@ export interface LevelDef {
   rows: string[];
   /** The character specs, as EARS sentences. */
   specText: string;
+  /** What the player must place on free tiles, one entry per item. Same entries are interchangeable. */
+  items: PlacedItem[];
+  /** Cards the player may insert into a spec, each once at most. A card is a rule without an actor. */
+  cards: Rule[];
 }
 
 export const PROLOGUE: LevelDef = {
@@ -19,6 +24,8 @@ export const PROLOGUE: LevelDef = {
   name: 'Prologue',
   rows: ['#########', '#B..#...#', '#...#...#', '#.......#', '#...#...#', '#...#..w#', '#########'],
   specText: prologueSpec,
+  items: ['salt'],
+  cards: [],
 };
 
 export const NIGHT_1: LevelDef = {
@@ -26,6 +33,11 @@ export const NIGHT_1: LevelDef = {
   name: 'Night I',
   rows: ['#########', '#w......#', '#.......#', '#.......#', '#...B...#', '#.......#', '#......w#', '#########'],
   specText: night1Spec,
+  items: ['bell'],
+  cards: [
+    { kw: 'IF', cond: 'bell_near', act: 'stay' },
+    { kw: 'IF', cond: 'bell_near', act: 'stay' },
+  ],
 };
 
 export const NIGHT_4: LevelDef = {
@@ -33,6 +45,8 @@ export const NIGHT_4: LevelDef = {
   name: 'Night IV',
   rows: ['#########', '#...B...#', '#.......#', '#.......#', '#...w...#', '#.......#', '#.......#', '#.......#', '#########'],
   specText: night4Spec,
+  items: ['bell'],
+  cards: [{ kw: 'IF', cond: 'bell_near', act: 'away_girl' }],
 };
 
 export const LEVELS: readonly LevelDef[] = [PROLOGUE, NIGHT_1, NIGHT_4];

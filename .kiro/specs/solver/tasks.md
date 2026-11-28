@@ -38,7 +38,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Property test against brute-force enumeration on small worlds. A test that transitions stay far below the path count.
   - _Requirements: S1.4, S1.5, S4.1, S4.2, S4.3, S4.4, S4.5, S4.6, S4.7, S4.8_
 
-- [ ] 4.1 Midnight Ward: items and cards on levels, and the oracle by search
+- [x] 4.1 Midnight Ward: items and cards on levels, and the oracle by search
   - Add `items` and `cards` to `LevelDef` for the three levels and the two test-only nights. `src/solve.ts` glue. `test/solve.test.ts` asserts 4/29, 12/2145, 7/329, 4/741, 15/1482, the empty boards, and that the first solution wins.
   - _Requirements: S7.1, S7.2, S7.3, S7.4, S7.5_
 

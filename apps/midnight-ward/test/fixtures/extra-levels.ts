@@ -15,6 +15,8 @@ WHEN the clock has struck 3, THE girl SHALL walk toward the window.
 WHEN the girl is near, THE shade SHALL move toward the girl.
 THE shade SHALL stay still.
 `,
+  items: ['salt', 'salt'],
+  cards: [],
 };
 
 export const NIGHT_3: LevelDef = {
@@ -32,4 +34,6 @@ THE snuffer SHALL move toward the candle.
 IF a lit candle is near, THEN THE wisp SHALL stay still.
 THE wisp SHALL move toward the girl.
 `,
+  items: ['candle', 'salt'],
+  cards: [],
 };
