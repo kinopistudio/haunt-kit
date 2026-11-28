@@ -31,7 +31,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: rows, numbers, glyph for every mark, slots `n + 1`, remove controls, tally text, palette and the reduced-motion block in the CSS, idempotent install.
   - _Requirements: U7.1, U7.2, U7.3, U7.4, U7.5, U9.1, U9.2, U9.3, U9.4_
 
-- [ ] 3.2 Spec book component
+- [x] 3.2 Spec book component
   - `ui/book.ts` with `SpecBook`: build, patch without rebuild, events, `lineElement`, `slotAt`, `setHotSlot`, bleed and tension. Tests in `happy-dom`.
   - _Requirements: U7.6, U7.7, U7.8, U7.9, U7.10_
 

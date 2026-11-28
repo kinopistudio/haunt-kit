@@ -83,6 +83,8 @@ export interface LineRow {
   origin: LineOrigin;
   mark: LineMark;
   glyph: string;
+  /** What the mark means, for readers who cannot see its colour. */
+  markLabel: string;
   /** Accessible label: the line number and what its mark means. */
   label: string;
   /** `×3`, or an empty string for 0. */
@@ -131,6 +133,7 @@ export function bookModel(view: BookView): BookModel {
           origin: line.origin,
           mark,
           glyph: MARK_GLYPH[mark],
+          markLabel: MARK_LABEL[mark],
           label: `Line ${index + 1}, ${MARK_LABEL[mark]}`,
           tally: count > 0 ? `\u00D7${count}` : '',
           removable: view.removable === true && line.origin === 'card',
