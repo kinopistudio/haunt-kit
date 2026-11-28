@@ -42,7 +42,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Add `items` and `cards` to `LevelDef` for the three levels and the two test-only nights. `src/solve.ts` glue. `test/solve.test.ts` asserts 4/29, 12/2145, 7/329, 4/741, 15/1482, the empty boards, and that the first solution wins.
   - _Requirements: S7.1, S7.2, S7.3, S7.4, S7.5_
 
-- [ ] 5.1 Scare Cue vocabulary
+- [x] 5.1 Scare Cue vocabulary
   - `apps/scare-cue/src/vocab.ts`: four conditions, six actions, two prohibitions. Add a Vitest script to the app. Tests for each word on small worlds.
   - _Requirements: S8.1_
 
