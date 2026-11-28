@@ -88,7 +88,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - A temporary script runs the prototype engine on the five levels (Night II and III as test fixtures) and writes `test/fixtures/oracle.json` with its source commit. The script is deleted afterwards. The test replays every scenario through the kit and compares it. A second test checks that an empty board is violated on all five levels.
   - _Requirements: R6.4, R6.5_
 
-- [ ] 6.4 Puzzle behaviour tests
+- [x] 6.4 Puzzle behaviour tests
   - Night IV: the rewrite at the sixth bell. Night I: a bell line below the always-true line is shadowed and never fires, and the same line above it fires.
   - _Requirements: R6.7, R6.8_
 
