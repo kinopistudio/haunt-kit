@@ -60,7 +60,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `createWorld` (turn order, ids, validation, `WorldError`), `insertLine`, `cloneWorld`.
   - _Requirements: R4.7, R4.8, R4.9, R4.10_
 
-- [ ] 5.1 Trace types and the turn loop
+- [x] 5.1 Trace types and the turn loop
   - `trace/types.ts`; `tick` with top-to-bottom evaluation, first true line wins, no-true-line case, shared state between actors of one tick, shadowed lines.
   - _Requirements: R5.2, R5.3, R5.4, R5.5, R5.11_
 

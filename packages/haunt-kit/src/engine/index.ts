@@ -1,1 +1,1 @@
-export {};
+export { tick } from './tick';
