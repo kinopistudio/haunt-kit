@@ -68,7 +68,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Clock advance, events applied before turns, insertion at a clamped line for every actor of the kind, event trace.
   - _Requirements: R5.1, R5.6_
 
-- [ ] 5.3 Properties and status
+- [x] 5.3 Properties and status
   - Property checks after every turn, violation stops the tick, horizon gives `complete`, `tick` on a finished world returns `null`, `run`.
   - _Requirements: R5.7, R5.8, R5.9_
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { tick } from '../src/index';
+import { run, tick } from '../src/index';
 import type { TickTrace } from '../src/index';
-import { createToyRegistry, toyWorld } from './fixtures/toy-vocab';
+import { contactProperty, createToyRegistry, toyWorld } from './fixtures/toy-vocab';
 
 const registry = createToyRegistry();
 
@@ -277,5 +277,132 @@ describe('tick: scheduled events', () => {
     for (let i = 0; i < 4; i++) must(tick(w, registry));
     expect(w.items[0]!.state.on).toBe(false); // flipped four times
     expect(w.actors[0]!.lines).toHaveLength(2);
+  });
+});
+
+describe('tick: properties and status', () => {
+  const reg = createToyRegistry().addProperty(contactProperty);
+  const rows = ['#######', '#S.T.s#', '#######'];
+  const walk = 'THE seeker SHALL step toward the target.';
+
+  it('R5.7: a property failure after a turn ends the tick and is recorded in the trace', () => {
+    const w = toyWorld(rows, walk, reg);
+    const t1 = must(tick(w, reg));
+    expect(t1.violation).toBeNull();
+    expect(t1.status).toBe('running');
+    const t2 = must(tick(w, reg));
+    expect(t2.violation).toEqual({ property: 'no_contact', message: 'seeker reached the target', actors: ['seeker'] });
+    expect(t2.status).toBe('violated');
+    expect(w.status).toBe('violated');
+  });
+
+  it('R5.7: the violating turn is the last one, and later actors do not act', () => {
+    const w = toyWorld(rows, `${walk}\nTHE target SHALL flip the switch.`, reg, { turnOrder: ['seeker'] });
+    must(tick(w, reg));
+    const t2 = must(tick(w, reg));
+    expect(t2.turns.map((x) => x.actor)).toEqual(['seeker']);
+    expect(w.items[0]!.state.on).toBe(true); // flipped on tick 1 only; the target did not act on tick 2
+  });
+
+  it('R5.7: actors before the violating turn keep their turns in the trace', () => {
+    const w = toyWorld(rows, `${walk}\nTHE target SHALL flip the switch.`, reg, { turnOrder: ['target', 'seeker'] });
+    must(tick(w, reg));
+    const t2 = must(tick(w, reg));
+    expect(t2.turns.map((x) => x.actor)).toEqual(['target', 'seeker']);
+    expect(w.items[0]!.state.on).toBe(false); // flipped by the target on both ticks
+  });
+
+  it('R5.7: properties are checked after every actor turn', () => {
+    let calls = 0;
+    const counting = createToyRegistry().addProperty({
+      id: 'count',
+      description: 'counts checks',
+      check: () => {
+        calls++;
+        return null;
+      },
+    });
+    const w = toyWorld(['#########', '#S..T..W#', '#########'], '', counting);
+    must(tick(w, counting));
+    expect(calls).toBe(3);
+    must(tick(w, counting));
+    expect(calls).toBe(6);
+  });
+
+  it('R5.7: only the properties listed in the world are checked, in order, and the first failure is reported', () => {
+    const two = createToyRegistry()
+      .addProperty({ id: 'first', description: '', check: () => ({ message: 'first failed', actors: ['a'] }) })
+      .addProperty({ id: 'second', description: '', check: () => ({ message: 'second failed', actors: ['b'] }) });
+    const w = toyWorld(rows, walk, two);
+    expect(must(tick(w, two)).violation).toMatchObject({ property: 'first', actors: ['a'] });
+    const only = toyWorld(rows, walk, two, { properties: ['second'] });
+    expect(must(tick(only, two)).violation?.property).toBe('second');
+    const none = toyWorld(rows, walk, two, { properties: [] });
+    expect(must(tick(none, two)).violation).toBeNull();
+  });
+
+  it('R5.7: the violation does not alias the failure object returned by the property', () => {
+    const actors = ['x'];
+    const r = createToyRegistry().addProperty({ id: 'p', description: '', check: () => ({ message: 'm', actors }) });
+    const w = toyWorld(rows, '', r);
+    const t = must(tick(w, r));
+    actors.push('y');
+    expect(t.violation!.actors).toEqual(['x']);
+  });
+
+  it('R5.8: the status becomes complete when the clock reaches the horizon', () => {
+    const w = toyWorld(rows, 'THE seeker SHALL do nothing.', reg, { horizon: 3 });
+    expect(must(tick(w, reg)).status).toBe('running');
+    expect(must(tick(w, reg)).status).toBe('running');
+    const last = must(tick(w, reg));
+    expect(last.status).toBe('complete');
+    expect(w.status).toBe('complete');
+    expect(w.tick).toBe(3);
+  });
+
+  it('R5.8: a violation on the horizon tick is a violation, not complete', () => {
+    const w = toyWorld(rows, walk, reg, { horizon: 2 });
+    must(tick(w, reg));
+    const t2 = must(tick(w, reg));
+    expect(t2.status).toBe('violated');
+    expect(w.status).toBe('violated');
+  });
+
+  it('R5.8: run ticks to the horizon and returns every trace', () => {
+    const w = toyWorld(rows, 'THE seeker SHALL do nothing.', reg, { horizon: 5 });
+    const traces = run(w, reg);
+    expect(traces.map((t) => t.tick)).toEqual([1, 2, 3, 4, 5]);
+    expect(traces.map((t) => t.status)).toEqual(['running', 'running', 'running', 'running', 'complete']);
+  });
+
+  it('R5.8: run stops at a violation', () => {
+    const w = toyWorld(rows, walk, reg, { horizon: 9 });
+    const traces = run(w, reg);
+    expect(traces).toHaveLength(2);
+    expect(traces.at(-1)!.status).toBe('violated');
+  });
+
+  it('R5.9: tick returns null on a complete world and leaves it unchanged', () => {
+    const w = toyWorld(rows, 'THE seeker SHALL flip the switch.', reg, { horizon: 1 });
+    must(tick(w, reg));
+    const before = JSON.stringify(w);
+    expect(tick(w, reg)).toBeNull();
+    expect(tick(w, reg)).toBeNull();
+    expect(JSON.stringify(w)).toBe(before);
+  });
+
+  it('R5.9: tick returns null on a violated world and leaves it unchanged', () => {
+    const w = toyWorld(rows, walk, reg);
+    run(w, reg);
+    expect(w.status).toBe('violated');
+    const before = JSON.stringify(w);
+    expect(tick(w, reg)).toBeNull();
+    expect(JSON.stringify(w)).toBe(before);
+  });
+
+  it('R5.9: run on a finished world returns no traces', () => {
+    const w = toyWorld(rows, '', reg, { horizon: 1 });
+    run(w, reg);
+    expect(run(w, reg)).toEqual([]);
   });
 });

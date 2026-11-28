@@ -1,1 +1,1 @@
-export { tick } from './tick';
+export { run, tick } from './tick';

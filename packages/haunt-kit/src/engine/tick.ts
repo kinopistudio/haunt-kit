@@ -2,7 +2,7 @@ import type { Rule } from '../grammar/types';
 import { ALWAYS } from '../grammar/types';
 import type { Registry } from '../registry/registry';
 import type { EvalContext } from '../registry/types';
-import type { TickTrace, TurnTrace } from '../trace/types';
+import type { TickTrace, TurnTrace, ViolationTrace } from '../trace/types';
 import { insertLine } from '../world/create';
 import type { Actor, World } from '../world/types';
 
@@ -57,6 +57,17 @@ function takeTurn(world: World, registry: Registry, actor: Actor): TurnTrace {
   };
 }
 
+/** Checks the world's properties in order and returns the first failure. */
+function checkProperties(world: World, registry: Registry): ViolationTrace | null {
+  for (const id of world.properties) {
+    const def = registry.property(id);
+    if (!def) throw new Error(`unknown property "${id}"`);
+    const failure = def.check(world);
+    if (failure) return { property: id, message: failure.message, actors: [...failure.actors] };
+  }
+  return null;
+}
+
 /**
  * Runs one tick and returns its trace, or `null` when the world is not running.
  * Mutates `world`. Deterministic: no clock, no random source.
@@ -79,8 +90,22 @@ export function tick(world: World, registry: Registry): TickTrace | null {
 
   for (const actor of world.actors) {
     trace.turns.push(takeTurn(world, registry, actor));
+    const violation = checkProperties(world, registry);
+    if (violation) {
+      world.status = 'violated';
+      trace.violation = violation;
+      break;
+    }
   }
 
+  if (world.status === 'running' && world.tick >= world.horizon) world.status = 'complete';
   trace.status = world.status;
   return trace;
+}
+
+/** Ticks until the world is no longer running and returns every trace. */
+export function run(world: World, registry: Registry): TickTrace[] {
+  const traces: TickTrace[] = [];
+  for (let t = tick(world, registry); t !== null; t = tick(world, registry)) traces.push(t);
+  return traces;
 }
