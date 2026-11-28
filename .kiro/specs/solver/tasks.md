@@ -25,7 +25,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `registerSafety(registry, rules)` in `src/engine/safety.ts`. Tests with the toy vocabulary: a turn-based prohibition, a state-based prohibition, the condition evaluated for the subject actor, message and actors, ids `S1`, `S2`.
   - _Requirements: S6.7_
 
-- [ ] 3.1 Solver skeleton and `findSolutions`
+- [x] 3.1 Solver skeleton and `findSolutions`
   - `src/solver` with `SolverError`, `ChoiceGenerator`, `stateKey`, `findSolutions`, exports in `haunt-kit`. Source scans for game words and forbidden globals.
   - _Requirements: S1.1, S1.2, S1.3, S1.4, S1.5, S2.1, S2.2, S2.3, S2.4_
 
