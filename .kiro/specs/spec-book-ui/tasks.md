@@ -12,7 +12,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests on small worlds: a fired line, a shadowed line, an idle line, a rewrite that shifts indexes, a scripted turn.
   - _Requirements: U3.1, U3.2, U3.3, U3.4, U3.5_
 
-- [ ] 1.3 Failure explanation
+- [x] 1.3 Failure explanation
   - `trace/explain.ts` with `explain`, `Finding`, `ExplainOptions`, the four sentence templates and the ordering.
   - Tests: each finding kind, the exact sentence forms, names and tick word from options, origin notes, empty findings for a clean run, inputs untouched, numbers re-derived from the recording.
   - _Requirements: U4.1, U4.2, U4.3, U4.4, U4.5, U4.6, U4.7, U4.8_
