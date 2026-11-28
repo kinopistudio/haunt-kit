@@ -46,7 +46,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `apps/scare-cue/src/vocab.ts`: four conditions, six actions, two prohibitions. Add a Vitest script to the app. Tests for each word on small worlds.
   - _Requirements: S8.1_
 
-- [ ] 5.2 Scare Cue specs, level and cards
+- [x] 5.2 Scare Cue specs, level and cards
   - `specs/props.md`, `specs/safety.md`, `src/level.ts` (map, legend, turn order, horizon, cards as sentences, `buildScareCue`, `checkScareCue`). Tests for spec loading, level shape and cards.
   - _Requirements: S8.2, S8.3, S8.4_
 
