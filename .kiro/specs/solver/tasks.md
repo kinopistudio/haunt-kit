@@ -54,7 +54,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - A test that scripts the visitor's moves by hand and checks the turn order, that `S1` and `S2` are checked after every prop's turn, and that the first failure stops the tick.
   - _Requirements: S8.5_
 
-- [ ] 6.1 Scare Cue oracle
+- [x] 6.1 Scare Cue oracle
   - `test/oracle.test.ts` with the literals: default rules fail `S2` at 2 and `S1` at 5; both fixes at line 1 are safe with 4,008,562 paths and 92% scared; fixes at line 2 and decoy only fail; the states expanded stay below 5,000; the counterexample trace shape.
   - _Requirements: S9.1, S9.2, S9.3, S9.4, S9.5_
 
