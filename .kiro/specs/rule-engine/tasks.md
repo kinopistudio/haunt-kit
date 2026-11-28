@@ -96,6 +96,6 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - A test that reads this spec's `requirements.md` and fails when an id has no test name starting with it.
   - _Requirements: R1.8_
 
-- [ ] 7.2 README quick start and final check
+- [x] 7.2 README quick start and final check
   - Add the commands to `README.md`. Remove `node_modules`, run `pnpm install`, `pnpm build` and `pnpm test`, and record the test count in the commit message body.
   - _Requirements: R1.2, R1.3, R1.4_
