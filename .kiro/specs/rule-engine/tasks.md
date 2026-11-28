@@ -44,7 +44,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Parse and print `write` sentences, with the restrictions (own actor, no nesting, line ≥ 1, a schedule condition must exist).
   - _Requirements: R3.5, R3.6, R3.7_
 
-- [ ] 3.4 Spec loader
+- [x] 3.4 Spec loader
   - `loadSpec` with list markers, headings and prose ignored, grouping by actor, events split out, file line numbers in errors, and case-insensitive sentence detection.
   - _Requirements: R3.8, R3.9_
 
