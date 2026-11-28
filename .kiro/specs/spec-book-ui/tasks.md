@@ -35,7 +35,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - `ui/book.ts` with `SpecBook`: build, patch without rebuild, events, `lineElement`, `slotAt`, `setHotSlot`, bleed and tension. Tests in `happy-dom`.
   - _Requirements: U7.6, U7.7, U7.8, U7.9, U7.10_
 
-- [ ] 3.3 Replay bar
+- [x] 3.3 Replay bar
   - `ui/replay-bar.ts` with `replayBarModel` and `ReplayBar`: buttons, range, keys, speed, timer. Tests in `happy-dom` with fake timers.
   - _Requirements: U8.1, U8.2, U8.3, U8.4_
 

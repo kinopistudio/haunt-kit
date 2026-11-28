@@ -7,3 +7,5 @@ export type { ActorModel, BookActorView, BookLineView, BookModel, BookNote, Book
 export { SPEC_BOOK_CSS, SPEC_BOOK_STYLE_ID, installSpecBookStyles } from './styles';
 export { SpecBook } from './book';
 export type { SlotRef, SpecBookHandlers } from './book';
+export { DEFAULT_INTERVAL_MS, ReplayBar, replayBarModel } from './replay-bar';
+export type { ReplayBarModel, ReplayBarOptions, ReplaySpeed } from './replay-bar';
