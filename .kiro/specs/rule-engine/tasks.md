@@ -12,7 +12,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `build` is `tsc --noEmit`, `test` is `vitest run`.
   - _Requirements: R1.1, R1.3, R1.4_
 
-- [ ] 1.3 `haunt-kit-mcp` placeholder package
+- [x] 1.3 `haunt-kit-mcp` placeholder package
   - `package.json`, `tsconfig.json` and an `src/index.ts` that exports nothing. It depends on `haunt-kit`. It has no test script.
   - _Requirements: R1.1, R1.3_
 

@@ -1,0 +1,13 @@
+{
+  "name": "haunt-kit-mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for Haunt Kit (placeholder; tools arrive with the mcp-server spec).",
+  "scripts": {
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "haunt-kit": "workspace:*"
+  }
+}

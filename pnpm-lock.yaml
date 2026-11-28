@@ -203,6 +203,12 @@ importers:
 
   packages/haunt-kit: {}
 
+  packages/haunt-kit-mcp:
+    dependencies:
+      haunt-kit:
+        specifier: workspace:*
+        version: link:../haunt-kit
+
 packages:
 
   '@jridgewell/resolve-uri@3.1.3':
