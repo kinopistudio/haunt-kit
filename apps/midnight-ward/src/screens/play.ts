@@ -1,6 +1,8 @@
 import { ReplayBar, SpecBook, bookState, printRule } from 'haunt-kit';
 import type { BookView, Registry, ReplayAction, ReplayState, World } from 'haunt-kit';
 import type { FxApi, Mount, Screen, Services } from '../app';
+import { coachStep, hasCoach } from '../coach';
+import type { CoachTarget } from '../coach';
 import { levelInfo, makeNames } from '../content';
 import type { Names } from '../content';
 import { buildWorld } from '../levels';
@@ -49,6 +51,9 @@ class PlayScreen implements Screen {
   private keyboard: Tile;
   private keyboardOn = false;
   private grabbed: { type: PlacedItem; x: number; y: number } | null = null;
+  private coachOn: boolean;
+  private coachTile: Tile | null = null;
+  private coachId = '';
   private phase: 'plan' | 'night' = 'plan';
   private run: NightRun | null = null;
   private cursor = 0;
@@ -66,6 +71,10 @@ class PlayScreen implements Screen {
     verdict: null as unknown as HTMLElement,
     live: null as unknown as HTMLElement,
     dock: null as unknown as HTMLElement,
+    coach: null as unknown as HTMLElement,
+    coachTag: null as unknown as HTMLElement,
+    coachText: null as unknown as HTMLElement,
+    coachToggle: null as unknown as HTMLButtonElement,
     clear: null as unknown as HTMLButtonElement,
     ring: null as unknown as HTMLButtonElement,
     back: null as unknown as HTMLButtonElement,
@@ -86,6 +95,7 @@ class PlayScreen implements Screen {
   ) {
     this.doc = root.ownerDocument;
     this.plan = freshPlan(level);
+    this.coachOn = hasCoach(level) && !services.progress.coachDone(level.id);
     this.preview = this.buildPreview();
     this.names = makeNames(levelActors(level));
     const tiles = floorTiles(level);
@@ -142,10 +152,29 @@ class PlayScreen implements Screen {
     const tools = el(doc, 'div', 'bar-tools');
     const mute = muteButton(doc, this.services);
     this.cleanups.push(mute.destroy);
-    tools.append(mute.button);
+    const toggle = el(doc, 'button', 'btn small', 'Show tutorial');
+    toggle.type = 'button';
+    toggle.id = 'coach-toggle';
+    this.els.coachToggle = toggle;
+    tools.append(toggle, mute.button);
     bar.append(back, heading, tools);
 
     const lesson = el(doc, 'p', 'lesson', info.lesson);
+
+    const coach = el(doc, 'section', 'coach');
+    coach.setAttribute('role', 'status');
+    coach.setAttribute('aria-live', 'polite');
+    const coachRow = el(doc, 'div', 'row');
+    const coachTag = el(doc, 'span', 'tag');
+    const hide = el(doc, 'button', 'skip', 'Hide tutorial');
+    hide.type = 'button';
+    hide.id = 'coach-hide';
+    coachRow.append(coachTag, hide);
+    const coachText = el(doc, 'p', 'text');
+    coach.append(coachRow, coachText);
+    this.els.coach = coach;
+    this.els.coachTag = coachTag;
+    this.els.coachText = coachText;
 
     const stage = el(doc, 'div', 'stage');
     const room = el(doc, 'section', 'room');
@@ -221,7 +250,7 @@ class PlayScreen implements Screen {
     live.setAttribute('aria-live', 'polite');
     this.els.live = live;
 
-    page.append(bar, lesson, stage, dock, live);
+    page.append(bar, lesson, coach, stage, dock, live);
     this.root.append(page);
   }
 
@@ -233,6 +262,8 @@ class PlayScreen implements Screen {
     };
 
     on(this.els.ring, 'click', () => this.ring());
+    on(coachHide(this.els.coach), 'click', () => this.setCoach(false));
+    on(this.els.coachToggle, 'click', () => this.setCoach(true));
     on(this.els.back, 'click', () => this.backToPlan());
     on(clear, 'click', () => {
       this.plan = freshPlan(this.level);
@@ -313,6 +344,7 @@ class PlayScreen implements Screen {
     this.renderTray();
     this.renderBook();
     this.renderClock();
+    this.renderCoach();
     this.syncScene();
   }
 
@@ -383,7 +415,7 @@ class PlayScreen implements Screen {
       preview: ok && holding && tile ? { type: holding.type, x: tile.x, y: tile.y } : null,
       cursor: this.keyboardOn ? this.keyboard : null,
       focus: this.focus,
-      coach: null,
+      coach: this.coachTile,
     });
   }
 
@@ -564,6 +596,78 @@ class PlayScreen implements Screen {
     this.refresh();
   }
 
+  // ---- the coach ----
+
+  private setCoach(on: boolean): void {
+    this.coachOn = on;
+    if (on) this.services.progress.resetCoach(this.level.id);
+    else this.services.progress.markCoachDone(this.level.id);
+    this.renderCoach();
+    this.scene.setMarks({ coach: this.coachTile });
+  }
+
+  private selectorOf(target: CoachTarget): string | null {
+    switch (target.kind) {
+      case 'tool':
+        return `[data-tool="${target.type}"]`;
+      case 'card':
+        return `[data-card="${target.index}"]`;
+      case 'slot':
+        return `.hk-spec[data-actor="${target.actor}"] .hk-slot[data-at="${target.at}"]`;
+      case 'remove':
+        return `.hk-spec[data-actor="${target.actor}"] .hk-line[data-idx="${target.at}"] .hk-rm`;
+      case 'ring':
+        return '#ring';
+      case 'retry':
+        return '#retry';
+      case 'next':
+        return '#next';
+      case 'tile':
+        return null;
+    }
+  }
+
+  /** Says the next instruction, and points at the control or tile it is about. */
+  private renderCoach(): void {
+    const { coach, coachToggle } = this.els;
+    const coached = hasCoach(this.level);
+    coachToggle.hidden = !coached || this.coachOn;
+    for (const old of this.root.querySelectorAll('.pulse')) old.classList.remove('pulse');
+    this.coachTile = null;
+    const run = this.run;
+    const atEnd = !!run && this.cursor === run.bells;
+    const phase = this.phase === 'plan' ? 'plan' : atEnd && run ? (run.outcome === 'won' ? 'won' : 'lost') : 'night';
+    const index = this.services.levels.findIndex((l) => l.id === this.level.id);
+    const step =
+      this.coachOn && coached
+        ? coachStep(this.level, {
+            phase,
+            plan: this.plan,
+            selection: this.selection,
+            hasNext: index >= 0 && index < this.services.levels.length - 1,
+            shadowedCard: !!run && [...run.stats.values()].some((s) => s.origin === 'card' && s.fired === 0 && s.shadowed > 0),
+          })
+        : null;
+    coach.hidden = !step;
+    coach.classList.toggle('done', step?.id === 'won');
+    if (!step) {
+      this.coachId = '';
+      return;
+    }
+    this.els.coachTag.textContent = `${step.tag} \u00B7 ${this.level.name}`;
+    this.els.coachText.textContent = step.text;
+    if (step.target?.kind === 'tile') this.coachTile = { x: step.target.x, y: step.target.y };
+    const selector = step.target ? this.selectorOf(step.target) : null;
+    const target = selector ? this.root.querySelector<HTMLElement>(selector) : null;
+    target?.classList.add('pulse');
+    if (target && step.id !== this.coachId && target.scrollIntoView) {
+      const rect = target.getBoundingClientRect();
+      const height = this.doc.defaultView?.innerHeight ?? 800;
+      if (rect.top < 0 || rect.bottom > height - 90) target.scrollIntoView({ block: 'center', behavior: this.services.reduced() ? 'auto' : 'smooth' });
+    }
+    this.coachId = step.id;
+  }
+
   // ---- the night ----
 
   private clearTimers(): void {
@@ -643,6 +747,8 @@ class PlayScreen implements Screen {
     this.renderTray();
     this.renderClock();
     this.renderVerdict(won, lost, forward);
+    // After the verdict, so that the coach can point at its buttons.
+    this.renderCoach();
 
     if (!forward) return;
     this.services.sfx.toll(cursor === BELLS ? 1.2 : 1);
@@ -711,6 +817,7 @@ class PlayScreen implements Screen {
       this.els.dawn.hidden = true;
     } else {
       this.services.progress.markCleared(this.level.id);
+      if (hasCoach(this.level)) this.services.progress.markCoachDone(this.level.id);
       const text = dawnText(run, solveCounts(this.level));
       box.classList.add('won');
       box.append(el(doc, 'p', 'head', text.headline));
@@ -778,6 +885,8 @@ class PlayScreen implements Screen {
     }
   }
 }
+
+const coachHide = (coach: HTMLElement): HTMLElement => coach.querySelector<HTMLElement>('#coach-hide')!;
 
 export const mountPlay: Mount = (root, services, _go, route) => {
   const level = services.levels.find((l) => route.screen === 'night' && l.id === route.id);

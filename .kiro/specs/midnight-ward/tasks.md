@@ -67,7 +67,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests in `happy-dom`: ring and read the book at several bells, scrub equals step, shadowed lines show ◐, a lost night strikes the girl's line and shows the explanation, retry keeps the plan, a won night marks ash and gold and saves the level, the outcome hides when the cursor moves back.
   - _Requirements: M4.2, M4.3, M4.4, M4.5, M4.6, M4.7, M5.2, M5.5, M5.6, M9.2, M9.4, M2.4_
 
-- [ ] 4.4 Coach in the play screen
+- [x] 4.4 Coach in the play screen
   - The coach panel, the pulse on its target, the glowing tile, `Hide tutorial` and `Show tutorial`, remembered in storage.
   - Tests in `happy-dom`: the first visit shows the coach, the target element has the pulse class, hiding stores it, a later visit has no coach, clearing the level stores it, Night IV has none.
   - _Requirements: M7.1, M7.2, M7.6_

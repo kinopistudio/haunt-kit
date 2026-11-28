@@ -188,3 +188,9 @@ button:focus-visible, a:focus-visible, canvas:focus-visible, .folio:focus-visibl
 
 /* Ink threads and ash fly over the whole page. */
 .fx-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 30; }
+
+.coach[hidden], #coach-toggle[hidden] { display: none; }
+@media (max-width: 860px) {
+  .coach { padding: 8px 10px; }
+  .coach .text { font-size: 15px; }
+}
