@@ -2,7 +2,7 @@
 
 Run the tests after each task, fix failures, tick the box, and commit with `spec(task N.N): <short description>`. Do not push. Do not copy code from `reference/prototype`; use it only to check results. If an oracle number does not match, find the difference in semantics until it does. Do not change the expected numbers.
 
-- [ ] 1.1 Registry: prohibitions and capitalised property ids
+- [x] 1.1 Registry: prohibitions and capitalised property ids
   - `ProhibitionDef`, `TurnContext`, `Registry.addProhibition`, `prohibition`, `matchProhibition`, `prohibitions`. `PropertyDef.check` takes an optional second argument `turn`. Property ids may start with a capital letter.
   - Extend `test/fixtures/toy-vocab.ts` with a prohibition.
   - _Requirements: S6.4_
@@ -62,7 +62,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `scripts/verify.mjs` and `scripts/verify-levels.ts`: the Vite middleware loader, the table, the expectations, exit codes, the total time. `packages/haunt-kit/test/verify.test.ts` runs it and checks the exit code, the time and the numbers.
   - _Requirements: S10.1, S10.2, S10.3, S10.4_
 
-- [ ] 8.1 Requirement coverage, README and final check
+- [x] 8.1 Requirement coverage, README and final check
   - A test that reads this `requirements.md` and fails when an id has no test name starting with it, or a task refers to an unknown id.
   - Update `README.md` (the verify line and the layout). Run `pnpm build`, `pnpm test` and `pnpm verify`, and record the verify table and the test count in the commit message body.
   - _Requirements: S1.6_

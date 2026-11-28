@@ -16,15 +16,15 @@ Needs Node 20.11 or newer and pnpm 12.
 pnpm install
 pnpm build     # type-checks every package and builds both apps
 pnpm test      # Vitest and fast-check, all packages
-pnpm verify    # placeholder until the solver spec lands
+pnpm verify    # runs the solver on every level of both apps and prints a table (under a second)
 ```
 
 ## Layout
-- `packages/haunt-kit`: the skeleton (grammar, registry, world, engine, trace).
+- `packages/haunt-kit`: the skeleton (grammar, registry, world, engine, trace, solver).
 - `packages/haunt-kit-mcp`: placeholder for the MCP server.
 - `apps/midnight-ward`: the game's vocabulary, levels and character specs (`specs/`).
-- `apps/scare-cue`: the tool. It will add only its own vocabulary.
-- `.kiro/specs/rule-engine`: the spec this code was built from (requirements, design, tasks).
+- `apps/scare-cue`: the tool. It adds only its own vocabulary (`src/vocab.ts`), its level and cards (`src/level.ts`) and its prop and safety specs (`specs/`).
+- `.kiro/specs/rule-engine`, `.kiro/specs/solver`: the specs this code was built from (requirements, design, tasks).
 
 ## Design reference
 `reference/prototype/` holds a playable prototype made at the start of the submission period to settle the rules, levels and look. The build does not import it. Kiro implements the packages and apps from the specs in `.kiro/specs/`.
