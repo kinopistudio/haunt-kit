@@ -52,7 +52,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `parseGrid` with the default legend, combined cells, free tiles, `GridError`.
   - _Requirements: R4.1, R4.2_
 
-- [ ] 4.2 Distance and movement
+- [x] 4.2 Distance and movement
   - `distance`, `isBlocked`, `stepToward`, `stepAway`, with property tests.
   - _Requirements: R4.3, R4.4, R4.5, R4.6_
 
