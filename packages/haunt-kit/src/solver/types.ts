@@ -69,6 +69,8 @@ export type CounterexampleResult =
       goalPaths: number;
       /** (tick, state) entries that were expanded. */
       states: number;
+      /** Ticks the engine simulated. At most `states` times the number of moves. */
+      transitions: number;
     }
   | {
       verdict: 'unsafe';
@@ -80,4 +82,5 @@ export type CounterexampleResult =
       paths: number;
       goalPaths: number;
       states: number;
+      transitions: number;
     };

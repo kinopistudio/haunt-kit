@@ -143,12 +143,12 @@ interface CounterexampleProblem {
 }
 interface Counterexample { property: string; tick: number; moves: Pos[]; trace: TickTrace[] }
 type CounterexampleResult =
-  | { verdict: 'safe'; paths: number; goalPaths: number; states: number }
-  | { verdict: 'unsafe'; shortest: Counterexample; counterexamples: Counterexample[]; paths: number; goalPaths: number; states: number }
+  | { verdict: 'safe'; paths: number; goalPaths: number; states: number; transitions: number }
+  | { verdict: 'unsafe'; shortest: Counterexample; counterexamples: Counterexample[]; paths: number; goalPaths: number; states: number; transitions: number }
 findCounterexample(problem: CounterexampleProblem): CounterexampleResult
 ```
 
-`counterexamples` has one entry per failed property, ordered by tick and then by discovery. `states` is the number of (tick, state) entries that were expanded.
+`counterexamples` has one entry per failed property, ordered by tick and then by discovery. `states` is the number of (tick, state) entries that were expanded and `transitions` the number of ticks the engine simulated.
 
 **Algorithm.** A layer is a `Map<string, Entry>` for one tick, where `Entry = { world, paths, goalPaths, parent, move }`.
 

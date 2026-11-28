@@ -10,5 +10,6 @@ export type {
 } from './types';
 export { stateKey } from './key';
 export { findSolutions } from './solutions';
+export { findCounterexample } from './counterexample';
 export { boardChoices } from './board';
 export type { BoardChoice, BoardOptions, ItemToken } from './board';

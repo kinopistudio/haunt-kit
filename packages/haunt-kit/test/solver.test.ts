@@ -15,7 +15,7 @@ describe('solver module', () => {
   it('S1.1: src/solver exists and its API is exported from the haunt-kit entry point', async () => {
     expect(existsSync(srcDir)).toBe(true);
     const kit = await import('../src/index');
-    for (const name of ['findSolutions', 'boardChoices', 'stateKey', 'SolverError']) expect(kit, name).toHaveProperty(name);
+    for (const name of ['findSolutions', 'findCounterexample', 'boardChoices', 'stateKey', 'SolverError']) expect(kit, name).toHaveProperty(name);
     expect(readFileSync(join(srcDir, '../index.ts'), 'utf8')).toContain("'./solver/index'");
   });
 

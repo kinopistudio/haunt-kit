@@ -33,7 +33,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `boardChoices` with placements (same-type tokens as a set), card arrangements, enumeration order, and `build`. Tests against closed formulas and for isolation between built worlds.
   - _Requirements: S3.1, S3.2, S3.3, S3.4_
 
-- [ ] 3.3 `findCounterexample`
+- [x] 3.3 `findCounterexample`
   - The layered search with memoization, path and goal-path counts by DP, shortest counterexample per property, replayed trace, default and custom moves, `SolverError` cases.
   - Property test against brute-force enumeration on small worlds. A test that transitions stay far below the path count.
   - _Requirements: S1.4, S1.5, S4.1, S4.2, S4.3, S4.4, S4.5, S4.6, S4.7, S4.8_
