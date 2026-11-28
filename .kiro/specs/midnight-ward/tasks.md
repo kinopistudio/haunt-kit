@@ -42,7 +42,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests with a fake canvas: the glide lasts at most 620 ms and 260 ms at ×2, zero under reduced motion, darkness is lower while planning than during a night, chips show the line number, numerals appear only when a kind repeats, the camera does not change between frames, `hit` finds an item before the tile behind it.
   - _Requirements: M8.8, M8.9, M8.10, M9.5_
 
-- [ ] 2.4 Ink threads and ash
+- [x] 2.4 Ink threads and ash
   - `src/render/fx.ts`: `FxLayer` with `thread` and `ash`, durations, fade, stop when idle, nothing under reduced motion.
   - Tests with a fake canvas and a fake clock.
   - _Requirements: M9.1, M9.3_
