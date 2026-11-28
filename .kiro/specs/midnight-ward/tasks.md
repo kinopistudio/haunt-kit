@@ -47,7 +47,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests with a fake canvas and a fake clock.
   - _Requirements: M9.1, M9.3_
 
-- [ ] 3.1 Sound
+- [x] 3.1 Sound
   - `src/audio.ts`: `Sfx` with toll, scratch, click, sting, chime, hum, `unlock`, `setMuted`. No audio files.
   - Tests with a fake `AudioContext`: nothing is scheduled while muted or before `unlock`, no throw when Web Audio is missing, the dawn chime and the toll schedule oscillators, and the setting is kept through `Progress`.
   - _Requirements: M10.1, M10.2, M10.3_
