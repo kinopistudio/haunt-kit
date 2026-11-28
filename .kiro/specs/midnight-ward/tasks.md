@@ -37,7 +37,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests with a fake 2D context: strips of growing size, back wall taller than side taller than front, a shadow ellipse before each sprite, wall and sprite order by depth.
   - _Requirements: M8.2, M8.3, M8.4, M8.5_
 
-- [ ] 2.3 Scene
+- [x] 2.3 Scene
   - `src/render/scene.ts` and `src/motion.ts`: layers, tweens, darkness, glow, chips and numerals, `setFrame`, `hit`, resize and device pixel ratio, reduced motion.
   - Tests with a fake canvas: the glide lasts at most 620 ms and 260 ms at ×2, zero under reduced motion, darkness is lower while planning than during a night, chips show the line number, numerals appear only when a kind repeats, the camera does not change between frames, `hit` finds an item before the tile behind it.
   - _Requirements: M8.8, M8.9, M8.10, M9.5_
