@@ -1,0 +1,14 @@
+{
+  "name": "haunt-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EARS-driven characters and props: grammar, registry, world, engine, trace.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  }
+}

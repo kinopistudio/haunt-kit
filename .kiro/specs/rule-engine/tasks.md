@@ -7,7 +7,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `pnpm test` and `pnpm build` run the matching script in every workspace package that has one.
   - _Requirements: R1.1, R1.3, R1.4, R1.5_
 
-- [ ] 1.2 `haunt-kit` package skeleton
+- [x] 1.2 `haunt-kit` package skeleton
   - `packages/haunt-kit` with `package.json` (`exports` to `src/index.ts`), `tsconfig.json`, Vitest and fast-check, an empty `src/index.ts`, and the module folders `grammar`, `registry`, `world`, `engine`, `trace`.
   - `build` is `tsc --noEmit`, `test` is `vitest run`.
   - _Requirements: R1.1, R1.3, R1.4_

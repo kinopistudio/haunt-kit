@@ -201,6 +201,8 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2(@types/node@26.6.11)(vite@8.4.0(@types/node@26.6.11))
 
+  packages/haunt-kit: {}
+
 packages:
 
   '@jridgewell/resolve-uri@3.1.3':
