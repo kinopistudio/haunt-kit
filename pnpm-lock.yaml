@@ -201,6 +201,18 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2(@types/node@26.6.11)(vite@8.4.0(@types/node@26.6.11))
 
+  apps/midnight-ward:
+    dependencies:
+      haunt-kit:
+        specifier: workspace:*
+        version: link:../../packages/haunt-kit
+
+  apps/scare-cue:
+    dependencies:
+      haunt-kit:
+        specifier: workspace:*
+        version: link:../../packages/haunt-kit
+
   packages/haunt-kit: {}
 
   packages/haunt-kit-mcp:

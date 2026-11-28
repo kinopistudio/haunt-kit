@@ -16,10 +16,9 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `package.json`, `tsconfig.json` and an `src/index.ts` that exports nothing. It depends on `haunt-kit`. It has no test script.
   - _Requirements: R1.1, R1.3_
 
-- [ ] 1.4 Two empty Vite apps
+- [x] 1.4 Two empty Vite apps
   - `apps/midnight-ward` and `apps/scare-cue`: `index.html`, `src/main.ts`, `vite.config.ts`, `tsconfig.json`, a `workspace:*` dependency on `haunt-kit`, build script `tsc --noEmit && vite build`.
   - Midnight Ward gets a Vitest test script. `src/vocab.ts` is added in task 6.1.
-  - `scare-cue/src/vocab.ts` returns an empty `Registry`, which shows the app uses the kit.
   - _Requirements: R1.1, R1.2, R1.3_
 
 - [ ] 1.5 Structure tests
@@ -29,6 +28,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
 - [ ] 2.1 Registry
   - `world/types.ts` and `grammar/types.ts` (types only), `registry/types.ts`, `registry/registry.ts`, `RegistryError`, pattern validation and matching.
   - Tests for registration, lookup, phrase matching, duplicates, reserved id, malformed patterns, `{n}` rules, the schedule condition and properties.
+  - `apps/scare-cue/src/vocab.ts` returns an empty `Registry` and `main.ts` calls it, which shows the app builds on the kit.
   - _Requirements: R2.1, R2.2, R2.3, R2.4, R2.5, R2.6, R2.7_
 
 - [ ] 3.1 Parse rule sentences
