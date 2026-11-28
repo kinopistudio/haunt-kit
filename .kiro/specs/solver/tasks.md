@@ -16,7 +16,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `SpecSet.safety`, collected by `loadSpec` in file order with file line numbers in errors. `createWorld` throws `WorldError` for a safety rule whose kind is not on the grid. Update the existing tests that build a `SpecSet`.
   - _Requirements: S6.5, S6.6_
 
-- [ ] 2.1 Engine: scripted moves, the turn for properties, `firedRule`, `openSteps`
+- [x] 2.1 Engine: scripted moves, the turn for properties, `firedRule`, `openSteps`
   - `tick(world, registry, { scripted })`, `check(world, turn)`, `firedRule`, `openSteps`. Add `addItem` to the world module and let `createWorld` use it.
   - Tests that a call without options behaves as before (the rule-engine suite stays green).
   - _Requirements: S5.1, S5.2, S5.3, S5.4, S5.5_

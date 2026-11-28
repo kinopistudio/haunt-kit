@@ -94,18 +94,11 @@ export function createWorld(config: WorldConfig): World {
 
   const { w, h, walls } = grid.map;
   const items: Item[] = grid.items.map(makeItem);
-  for (const init of config.items ?? []) {
-    const { x, y } = init.pos;
-    if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= w || y >= h || walls.has(y * w + x)) {
-      throw new WorldError(`item "${init.type}" at (${x}, ${y}) is outside the map or inside a wall`);
-    }
-    items.push(makeItem(init));
-  }
 
   const markers: Record<string, Pos[]> = {};
   for (const [name, list] of Object.entries(grid.markers)) markers[name] = list.map(copyPos);
 
-  return {
+  const world: World = {
     map: { w, h, walls },
     markers,
     actors,
@@ -117,6 +110,24 @@ export function createWorld(config: WorldConfig): World {
     status: 'running',
     nextLineId,
   };
+  for (const init of config.items ?? []) addItem(world, init);
+  return world;
+}
+
+/**
+ * Adds an item to a world. Throws `WorldError` when the tile is outside the map or inside a wall.
+ * Items keep the order they were added in; that order is part of the rules (the first of two equal
+ * candidates wins ties).
+ */
+export function addItem(world: World, init: ItemInit): Item {
+  const { x, y } = init.pos;
+  const { w, h, walls } = world.map;
+  if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= w || y >= h || walls.has(y * w + x)) {
+    throw new WorldError(`item "${init.type}" at (${x}, ${y}) is outside the map or inside a wall`);
+  }
+  const item = makeItem(init);
+  world.items.push(item);
+  return item;
 }
 
 /**

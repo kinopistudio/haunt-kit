@@ -41,3 +41,16 @@ export function stepToward(world: World, actor: Actor, target: Pos): boolean {
 export function stepAway(world: World, actor: Actor, from: Pos): boolean {
   return stepAlong(world, actor, actor.pos.x - from.x, actor.pos.y - from.y);
 }
+
+/**
+ * The tiles an actor standing on `from` may step to: its own tile first, then the east, west, south and
+ * north neighbours, in that order, leaving out blocked tiles. South is `y + 1`.
+ */
+export function openSteps(world: Pick<World, 'map' | 'items'>, from: Pos): Pos[] {
+  const out: Pos[] = [{ x: from.x, y: from.y }];
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+    const next = { x: from.x + dx, y: from.y + dy };
+    if (!isBlocked(world, next)) out.push(next);
+  }
+  return out;
+}
