@@ -29,7 +29,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - `src/solver` with `SolverError`, `ChoiceGenerator`, `stateKey`, `findSolutions`, exports in `haunt-kit`. Source scans for game words and forbidden globals.
   - _Requirements: S1.1, S1.2, S1.3, S1.4, S1.5, S2.1, S2.2, S2.3, S2.4_
 
-- [ ] 3.2 Board choices
+- [x] 3.2 Board choices
   - `boardChoices` with placements (same-type tokens as a set), card arrangements, enumeration order, and `build`. Tests against closed formulas and for isolation between built worlds.
   - _Requirements: S3.1, S3.2, S3.3, S3.4_
 
