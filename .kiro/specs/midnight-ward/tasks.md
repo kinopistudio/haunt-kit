@@ -27,7 +27,7 @@ Run the tests and the build after each task, fix failures, tick the box, and com
   - Tests: the step for every plan state, the shadow warning with the remove target, retry after a loss, next after a win, and that each hint wins when run.
   - _Requirements: M7.1, M7.2, M7.3, M7.4, M7.5_
 
-- [ ] 2.1 Camera
+- [x] 2.1 Camera
   - `src/render/camera.ts`, `src/render/theme.ts`: projection, `fit`, `unprojectFloor`, `tileAt`, the fixed pitch and distance.
   - Tests: tile centres round-trip at several map sizes and canvas sizes (property test), points outside give `null`, the dollhouse fits canvases from 320 px wide, the pitch is a constant, no function takes a pitch from outside.
   - _Requirements: M8.1, M8.6, M8.7, M8.11_
