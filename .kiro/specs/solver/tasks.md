@@ -12,7 +12,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Property tests: print then parse returns an equal rule; arbitrary text never makes the parser throw.
   - _Requirements: S6.1, S6.2, S6.3_
 
-- [ ] 1.3 Loader and world: safety rules in `SpecSet`
+- [x] 1.3 Loader and world: safety rules in `SpecSet`
   - `SpecSet.safety`, collected by `loadSpec` in file order with file line numbers in errors. `createWorld` throws `WorldError` for a safety rule whose kind is not on the grid. Update the existing tests that build a `SpecSet`.
   - _Requirements: S6.5, S6.6_
 

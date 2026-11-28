@@ -1,4 +1,4 @@
-import { validateRule } from '../grammar/validate';
+import { validateRule, validateSafety } from '../grammar/validate';
 import type { Rule, ScheduledEvent, SpecSet } from '../grammar/types';
 import type { Registry } from '../registry/registry';
 import type { Actor, Item, ItemInit, Line, LineOrigin, ParsedGrid, Pos, World } from './types';
@@ -80,6 +80,12 @@ export function createWorld(config: WorldConfig): World {
     if (!Number.isInteger(e.line) || e.line < 1) throw new WorldError(`a scheduled write at line ${e.line}: lines start at 1`);
     return { tick: e.tick, actor: e.actor, line: e.line, rule: copyRule(e.rule) };
   });
+
+  for (const rule of spec.safety) {
+    if (!kindsOnGrid.has(rule.actor)) throw new WorldError(`a safety rule names "${rule.actor}", but no "${rule.actor}" is on the grid`);
+    const problem = validateSafety(rule, registry);
+    if (problem) throw new WorldError(`safety rule of "${rule.actor}": ${problem}`);
+  }
 
   const properties = config.properties ?? registry.properties().map((p) => p.id);
   for (const id of properties) {

@@ -53,7 +53,7 @@ const scenarioArb: fc.Arbitrary<Scenario> = fc
       rows.push(row + '#');
     }
     rows.push('#'.repeat(W + 2));
-    const spec: SpecSet = { actors: { seeker, watcher, target }, events };
+    const spec: SpecSet = { actors: { seeker, watcher, target }, events, safety: [] };
     const world = createWorld({ grid: parseGrid(rows, TOY_LEGEND), spec, registry, horizon: HORIZON });
     return { world };
   });
@@ -180,7 +180,7 @@ describe('first true line and shadowing, for any line list', () => {
   function turnFor(lines: Rule[], table: boolean[]) {
     const world = createWorld({
       grid: parseGrid(['#####', '#S..#', '#####'], TOY_LEGEND),
-      spec: { actors: { seeker: lines }, events: [] },
+      spec: { actors: { seeker: lines }, events: [], safety: [] },
       registry: flagRegistry,
       horizon: 3,
       items: [{ type: 'flags', pos: { x: 2, y: 1 }, state: Object.fromEntries(table.map((v, i) => [`f${i}`, v])) }],

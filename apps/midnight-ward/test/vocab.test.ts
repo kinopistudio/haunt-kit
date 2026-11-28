@@ -9,7 +9,7 @@ const registry = createRegistry();
 function hall(rows: string[], items: ItemInit[] = [], spec: Record<string, Rule[]> = {}): World {
   return createWorld({
     grid: parseGrid(rows, LEGEND),
-    spec: { actors: spec, events: [] },
+    spec: { actors: spec, events: [], safety: [] },
     registry,
     horizon: HORIZON,
     turnOrder: TURN_ORDER,

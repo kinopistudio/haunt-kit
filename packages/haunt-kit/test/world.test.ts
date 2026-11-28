@@ -57,7 +57,7 @@ describe('createWorld', () => {
           const row = '#' + letters.join('') + '#';
           const w = createWorld({
             grid: parseGrid([row], lg),
-            spec: { actors: {}, events: [] },
+            spec: { actors: {}, events: [], safety: [] },
             registry,
             horizon: 3,
             turnOrder,
@@ -127,7 +127,7 @@ describe('createWorld', () => {
   });
 
   it('R4.8: a rule with an unregistered id or a mismatched n is an error that names the line', () => {
-    const bad = (rule: Rule): WorldConfig => config({ spec: { actors: { seeker: [{ kw: '', cond: 'always', act: 'rest' }, rule] }, events: [] } });
+    const bad = (rule: Rule): WorldConfig => config({ spec: { actors: { seeker: [{ kw: '', cond: 'always', act: 'rest' }, rule] }, events: [], safety: [] } });
     expect(() => createWorld(bad({ kw: 'WHEN', cond: 'moon', act: 'rest' }))).toThrow(/line 2 of "seeker".*moon/);
     expect(() => createWorld(bad({ kw: 'WHEN', cond: 'near', act: 'dance' }))).toThrow(/dance/);
     expect(() => createWorld(bad({ kw: 'WHEN', cond: 'late', act: 'rest' }))).toThrow(/needs n/);
@@ -137,7 +137,7 @@ describe('createWorld', () => {
   it('R4.8: an event with a bad rule, tick or line is an error', () => {
     const rule: Rule = { kw: '', cond: 'always', act: 'rest' };
     const ev = (e: Partial<{ tick: number; line: number; rule: Rule }>) =>
-      config({ spec: { actors: { seeker: [] }, events: [{ tick: 3, actor: 'seeker', line: 1, rule, ...e }] } });
+      config({ spec: { actors: { seeker: [] }, events: [{ tick: 3, actor: 'seeker', line: 1, rule, ...e }], safety: [] } });
     expect(() => createWorld(ev({}))).not.toThrow();
     expect(() => createWorld(ev({ rule: { ...rule, act: 'dance' } }))).toThrow(/dance/);
     expect(() => createWorld(ev({ tick: 0 }))).toThrow(/never happens/);
@@ -155,7 +155,7 @@ describe('createWorld', () => {
 
   it('R4.8: kinds whose generated ids would collide are an error', () => {
     const lg: Legend = { A: { actor: 'ghost' }, B: { actor: 'ghost-2' } };
-    expect(() => createWorld({ grid: parseGrid(['#AAB#'], lg), spec: { actors: {}, events: [] }, registry, horizon: 3 })).toThrow(/not unique/);
+    expect(() => createWorld({ grid: parseGrid(['#AAB#'], lg), spec: { actors: {}, events: [], safety: [] }, registry, horizon: 3 })).toThrow(/not unique/);
   });
 });
 
@@ -230,7 +230,7 @@ describe('insertLine', () => {
         fc.array(fc.tuple(fc.integer({ min: 0, max: 12 }), fc.constantFrom('seeker', 'watcher')), { maxLength: 15 }),
         (initial, inserts) => {
           const rules = Array.from({ length: initial }, () => ruleOf('rest'));
-          const w = createWorld(config({ spec: { actors: { seeker: rules, watcher: [ruleOf('rest')] }, events: [] } }));
+          const w = createWorld(config({ spec: { actors: { seeker: rules, watcher: [ruleOf('rest')] }, events: [], safety: [] } }));
           const seen = new Set(w.actors.flatMap((a) => a.lines.map((l) => l.id)));
           for (const [index, actorId] of inserts) {
             const actor = w.actors.find((x) => x.id === actorId)!;
@@ -261,5 +261,28 @@ describe('insertLine', () => {
     expect(() => insertLine(w, 'nobody', 0, ruleOf('rest'), 'card')).toThrow(/nobody/);
     expect(() => insertLine(w, 'seeker', -1, ruleOf('rest'), 'card')).toThrow(RangeError);
     expect(() => insertLine(w, 'seeker', 1.5, ruleOf('rest'), 'card')).toThrow(RangeError);
+  });
+});
+
+describe('createWorld: safety rules', () => {
+  const safetyText = (actor: string): string => `THE ${actor} SHALL NOT be on WHILE the target is near.`;
+
+  it('S6.6: a safety rule for a kind on the grid is accepted and adds no lines', () => {
+    const { spec } = loadSpec(`${SPEC}\n${safetyText('seeker')}`, registry);
+    expect(spec.safety).toHaveLength(1);
+    const w = createWorld(config({ spec }));
+    expect(w.actors.find((a) => a.id === 'seeker')!.lines).toHaveLength(2);
+  });
+
+  it('S6.6: a safety rule for a kind that is not on the grid throws a WorldError that names the kind', () => {
+    const { spec } = loadSpec(`${SPEC}\n${safetyText('ghost')}`, registry);
+    expect(() => createWorld(config({ spec }))).toThrow(WorldError);
+    expect(() => createWorld(config({ spec }))).toThrow(/"ghost"/);
+  });
+
+  it('S6.6: a safety rule that does not fit the registry throws a WorldError', () => {
+    const { spec } = loadSpec(SPEC, registry);
+    spec.safety.push({ actor: 'seeker', prohibited: 'missing', cond: 'near' });
+    expect(() => createWorld(config({ spec }))).toThrow(/prohibition "missing"/);
   });
 });

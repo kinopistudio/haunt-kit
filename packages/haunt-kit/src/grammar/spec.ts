@@ -13,10 +13,11 @@ const HAS_SHALL = /\bSHALL\b/i;
  * - Every other line (blank lines, headings, prose, fences) is ignored.
  *
  * Rules are collected per actor in file order. Write sentences go to `events`, in file order, and
- * make sure their actor exists in `actors`. Every invalid sentence adds one `SpecError`.
+ * make sure their actor exists in `actors`. Safety rules (`SHALL NOT`) go to `safety`, in file order, and
+ * are not lines of any actor. Every invalid sentence adds one `SpecError`.
  */
 export function loadSpec(text: string, registry: Registry): { spec: SpecSet; errors: SpecError[] } {
-  const spec: SpecSet = { actors: {}, events: [] };
+  const spec: SpecSet = { actors: {}, events: [], safety: [] };
   const errors: SpecError[] = [];
 
   text.split(/\r?\n/).forEach((raw, i) => {
@@ -43,6 +44,8 @@ export function loadSpec(text: string, registry: Registry): { spec: SpecSet; err
       const { event } = parsed.value;
       spec.actors[event.actor] ??= [];
       spec.events.push(event);
+    } else {
+      spec.safety.push(parsed.value.rule);
     }
   });
 

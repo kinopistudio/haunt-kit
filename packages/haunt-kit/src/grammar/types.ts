@@ -48,6 +48,8 @@ export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: ParseE
 export interface SpecSet {
   actors: Record<string, Rule[]>;
   events: ScheduledEvent[];
+  /** Safety rules in file order. They are not lines of any actor's spec. */
+  safety: SafetyRule[];
 }
 
 /** `line` is the 1-based line number in the spec file. */

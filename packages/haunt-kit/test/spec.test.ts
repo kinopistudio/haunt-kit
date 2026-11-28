@@ -105,7 +105,7 @@ describe('loadSpec', () => {
   });
 
   it('R3.8: an empty file gives an empty spec', () => {
-    expect(loadSpec('', registry)).toEqual({ spec: { actors: {}, events: [] }, errors: [] });
+    expect(loadSpec('', registry)).toEqual({ spec: { actors: {}, events: [], safety: [] }, errors: [] });
   });
 
   it('R3.9: a sentence with a lowercase keyword is reported, not ignored', () => {
@@ -124,5 +124,51 @@ describe('loadSpec', () => {
     const { spec, errors } = loadSpec('The seeker is a small ghost.\nIf you read this, it works.\nWhen in doubt, ask.', registry);
     expect(errors).toEqual([]);
     expect(spec.actors).toEqual({});
+  });
+});
+
+describe('loadSpec: safety rules', () => {
+  const text = [
+    '# Safety',
+    '',
+    '- THE seeker SHALL NOT be on WHILE the target is near.',
+    'THE seeker SHALL do nothing.',
+    '2. THE watcher SHALL NOT be on WHILE the clock is past 4.',
+  ].join('\n');
+
+  it('S6.5: safety rules are collected in file order in spec.safety', () => {
+    const { spec, errors } = loadSpec(text, registry);
+    expect(errors).toEqual([]);
+    expect(spec.safety).toEqual([
+      { actor: 'seeker', prohibited: 'be_on', cond: 'near' },
+      { actor: 'watcher', prohibited: 'be_on', cond: 'late', n: 4 },
+    ]);
+  });
+
+  it('S6.5: safety rules are not added to spec.actors', () => {
+    const { spec } = loadSpec('THE watcher SHALL NOT be on WHILE the target is near.', registry);
+    expect(spec.actors).toEqual({});
+    expect(spec.events).toEqual([]);
+    expect(Object.keys(loadSpec(text, registry).spec.actors)).toEqual(['seeker']);
+  });
+
+  it('S6.5: an invalid safety sentence is reported with its file line and column, and the valid ones still load', () => {
+    const { spec, errors } = loadSpec(
+      ['THE seeker SHALL NOT be on WHILE the target is near.', '', '  - THE seeker SHALL NOT dance WHILE the target is near.', 'THE seeker SHALL NOT be on.'].join('\n'),
+      registry,
+    );
+    expect(spec.safety).toHaveLength(1);
+    expect(errors.map((e) => [e.line, e.message.split(' ')[0]])).toEqual([[3, 'unknown'], [4, 'a']]);
+    expect(errors[0]!.column).toBe('  - THE seeker SHALL NOT dance'.indexOf('dance') + 1);
+    expect(errors[0]!.text).toBe('- THE seeker SHALL NOT dance WHILE the target is near.');
+  });
+
+  it('S6.5: a lowercase safety sentence is reported, not ignored', () => {
+    const { errors } = loadSpec('the seeker shall not be on while the target is near.', registry);
+    expect(errors.map((e) => e.line)).toEqual([1]);
+  });
+
+  it('S6.5: an empty file has an empty safety list', () => {
+    expect(loadSpec('', registry).spec.safety).toEqual([]);
   });
 });
