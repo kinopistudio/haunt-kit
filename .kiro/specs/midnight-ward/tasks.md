@@ -2,7 +2,7 @@
 
 Run the tests and the build after each task, fix failures, tick the box, and commit with `spec(task N.N): <short description>`. Do not push. Do not copy code from `reference/prototype`; reimplement from `requirements.md` and `design.md`. The tasks of `.kiro/specs/spec-book-ui` come first, because this game uses its book, replay bar, recording and explanation. Do not change a level's rules, `targetSolveRate` or the solve counts. `apps/*` contain no rule evaluation or search.
 
-- [ ] 1.1 Plan model
+- [x] 1.1 Plan model
   - `src/plan.ts` and `src/content.ts` (level info, actor display names): `freshPlan`, `placeItem`, `takeItem`, `moveItem`, `insertCard`, `removeCard`, `clear`, `remaining`, `usedCards`, `isFreeTile`, `toPlacement`, `toInserts`.
   - Tests: placing, refusing walls, actors, the bed and occupied tiles, taking items back, inserting and removing cards with the lines shifting, one card in one spec at most, clearing, and a property test that any operation sequence keeps the plan valid. A plan equals the solver's choice: run both and compare status and traces.
   - _Requirements: M3.1, M3.2, M3.3, M3.4, M3.8, M3.10, M3.11_
