@@ -21,9 +21,21 @@ export interface ScheduledEvent {
   rule: Rule;
 }
 
+/**
+ * A safety rule: `THE <actor> SHALL NOT <prohibition> WHILE <condition>.` `prohibited` is a registered
+ * prohibition id and `cond` a registered condition id. `n` is set exactly when the condition's phrase has `{n}`.
+ */
+export interface SafetyRule {
+  actor: string;
+  prohibited: string;
+  cond: string;
+  n?: number;
+}
+
 export type Sentence =
   | { type: 'rule'; actor: string; rule: Rule }
-  | { type: 'write'; event: ScheduledEvent };
+  | { type: 'write'; event: ScheduledEvent }
+  | { type: 'safety'; rule: SafetyRule };
 
 /** `column` is 1-based. */
 export interface ParseError {

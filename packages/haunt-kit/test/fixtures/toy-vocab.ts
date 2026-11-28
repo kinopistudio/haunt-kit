@@ -47,6 +47,7 @@ export function createToyRegistry(): Registry {
         if (t) stepAway(ctx.world, ctx.actor, t.pos);
       },
     })
+    .addProhibition({ id: 'be_on', pattern: 'be on', occurs: (ctx) => switches(ctx).some((s) => s.state.on === true) })
     .addAction({ id: 'rest', pattern: 'do nothing', run: () => {} })
     .addAction({
       id: 'flip',

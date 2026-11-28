@@ -1,6 +1,6 @@
 import type { Registry } from '../registry/registry';
 import { ALWAYS } from './types';
-import type { Keyword, ParseResult, Rule, Sentence } from './types';
+import type { Keyword, ParseResult, Rule, SafetyRule, Sentence } from './types';
 
 const ACTOR_RE = /^[a-z][a-z0-9-]*(?: [a-z0-9-]+)*$/;
 
@@ -27,6 +27,14 @@ const FORMS: Form[] = [
   { kind: '', exact: new RegExp(SRC[''], 'd'), loose: new RegExp(SRC[''], 'di'), cond: 0, actor: 2, act: 4 },
 ];
 
+/** `THE <actor> SHALL NOT <prohibition> WHILE <condition>.` Groups: 2 actor, 5 prohibition, 7 condition. */
+const SAFETY_SRC = '^(THE) +(.+?) +(SHALL) +(NOT) +(.+?) +(WHILE) +(.+?) *\\.$';
+const SAFETY_EXACT = new RegExp(SAFETY_SRC, 'd');
+const SAFETY_LOOSE = new RegExp(SAFETY_SRC, 'di');
+const SAFETY_KEYWORDS = [1, 3, 4, 6];
+const SHALL_NOT = /\bSHALL +NOT\b/di;
+const SAFETY_FORM = 'a safety rule reads: THE <actor> SHALL NOT <prohibition> WHILE <condition>.';
+
 const KEYWORD_GROUPS: Record<Keyword, number[]> = { WHEN: [1, 3, 5], IF: [1, 3, 4, 6], '': [1, 3] };
 
 function fail<T>(message: string, column: number): ParseResult<T> {
@@ -41,6 +49,28 @@ export function parseSentence(text: string, registry: Registry): ParseResult<Sen
   const col = (index: number): number => lead + index + 1;
 
   if (!body.endsWith('.')) return fail('a sentence ends with a period', col(body.length));
+
+  const safety = SAFETY_EXACT.exec(body);
+  if (safety?.indices) {
+    const at = (g: number): { text: string; column: number } => ({ text: safety[g]!, column: col(safety.indices![g]![0]) });
+    return finishSafety(at, registry);
+  }
+
+  const looseSafety = SAFETY_LOOSE.exec(body);
+  if (looseSafety?.indices) {
+    for (const g of SAFETY_KEYWORDS) {
+      const kw = looseSafety[g]!;
+      if (kw !== kw.toUpperCase()) {
+        return fail(`the keyword "${kw}" must be written in capitals: ${kw.toUpperCase()}`, col(looseSafety.indices[g]![0]));
+      }
+    }
+  }
+
+  const negated = /^(THE|WHEN|IF)\b/.test(body) ? SHALL_NOT.exec(body) : null;
+  if (negated?.indices) {
+    const where = body.slice(negated.index).search(/NOT/i) + negated.index;
+    return fail(SAFETY_FORM, col(where));
+  }
 
   for (const form of FORMS) {
     const m = form.exact.exec(body);
@@ -102,6 +132,26 @@ function finish(
   const rule: Rule = { kw: form.kind, cond: condId, act: action.id };
   if (n !== undefined) rule.n = n;
   return { ok: true, value: { type: 'rule', actor: actor.text, rule } };
+}
+
+/** The safety form: actor, prohibition phrase and condition phrase, each checked against the registry. */
+function finishSafety(at: (group: number) => { text: string; column: number }, registry: Registry): ParseResult<Sentence> {
+  const actor = at(2);
+  if (!ACTOR_RE.test(actor.text)) {
+    return fail(`"${actor.text}" is not an actor name (lowercase words, digits and hyphens)`, actor.column);
+  }
+  const p = at(5);
+  const prohibition = registry.matchProhibition(p.text);
+  if (!prohibition) return fail(`unknown prohibition "${p.text}"`, p.column);
+  const c = at(7);
+  const hit = registry.matchCondition(c.text);
+  if (!hit) {
+    const hint = c.text.trim().toLowerCase() === ALWAYS ? ': a safety rule needs a condition that can be false' : '';
+    return fail(`unknown condition "${c.text}"${hint}`, c.column);
+  }
+  const rule: SafetyRule = { actor: actor.text, prohibited: prohibition.id, cond: hit.def.id };
+  if (hit.n !== undefined) rule.n = hit.n;
+  return { ok: true, value: { type: 'safety', rule } };
 }
 
 const WRITE_RE = /^write "(.*)" at line (.+)$/d;

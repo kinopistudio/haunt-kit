@@ -39,7 +39,7 @@ export function loadSpec(text: string, registry: Registry): { spec: SpecSet; err
     if (parsed.value.type === 'rule') {
       const { actor, rule } = parsed.value;
       (spec.actors[actor] ??= []).push(rule);
-    } else {
+    } else if (parsed.value.type === 'write') {
       const { event } = parsed.value;
       spec.actors[event.actor] ??= [];
       spec.events.push(event);

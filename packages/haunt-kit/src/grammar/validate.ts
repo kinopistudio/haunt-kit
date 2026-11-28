@@ -1,6 +1,6 @@
 import type { Registry } from '../registry/registry';
 import { ALWAYS } from './types';
-import type { Rule } from './types';
+import type { Rule, SafetyRule } from './types';
 
 export const MAX_N = 999_999_999;
 
@@ -22,5 +22,18 @@ export function validateRule(rule: Rule, registry: Registry): string | null {
     return `"${ALWAYS}" takes no n`;
   }
   if (!registry.action(rule.act)) return `action "${rule.act}" is not registered`;
+  return null;
+}
+
+/** Returns a message when `rule` cannot be printed or checked with `registry`, and `null` when it is fine. */
+export function validateSafety(rule: SafetyRule, registry: Registry): string | null {
+  if (!registry.prohibition(rule.prohibited)) return `prohibition "${rule.prohibited}" is not registered`;
+  if (rule.cond === ALWAYS) return `a safety rule needs a condition, not "${ALWAYS}"`;
+  if (!registry.condition(rule.cond)) return `condition "${rule.cond}" is not registered`;
+  const wantsN = registry.conditionHasParam(rule.cond);
+  if (wantsN && (rule.n === undefined || !Number.isInteger(rule.n) || rule.n < 0 || rule.n > MAX_N)) {
+    return `condition "${rule.cond}" needs n to be an integer from 0 to ${MAX_N}`;
+  }
+  if (!wantsN && rule.n !== undefined) return `condition "${rule.cond}" takes no n`;
   return null;
 }

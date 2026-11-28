@@ -1,5 +1,5 @@
 export * from './types';
 export { parseSentence } from './parse';
-export { printRule, printEvent } from './print';
-export { validateRule } from './validate';
+export { printRule, printEvent, printSafety } from './print';
+export { validateRule, validateSafety } from './validate';
 export { loadSpec } from './spec';

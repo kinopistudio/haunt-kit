@@ -1,9 +1,9 @@
 import type { Registry } from '../registry/registry';
 import { ALWAYS } from './types';
-import type { Rule, ScheduledEvent } from './types';
-import { MAX_N, validateRule } from './validate';
+import type { Rule, SafetyRule, ScheduledEvent } from './types';
+import { MAX_N, validateRule, validateSafety } from './validate';
 
-function conditionText(rule: Rule, registry: Registry): string {
+function conditionText(rule: Pick<Rule, 'cond' | 'n'>, registry: Registry): string {
   const def = registry.condition(rule.cond)!;
   return rule.n === undefined ? def.pattern : def.pattern.replace('{n}', String(rule.n));
 }
@@ -36,4 +36,12 @@ export function printEvent(event: ScheduledEvent, registry: Registry): string {
   const inner = printRule(event.actor, event.rule, registry);
   const when = schedule.pattern.replace('{n}', String(event.tick));
   return `WHEN ${when}, THE ${event.actor} SHALL write "${inner}" at line ${event.line}.`;
+}
+
+/** Prints a safety rule: `THE <actor> SHALL NOT <prohibition> WHILE <condition>.` Throws for a rule that does not fit the registry. */
+export function printSafety(rule: SafetyRule, registry: Registry): string {
+  const problem = validateSafety(rule, registry);
+  if (problem) throw new Error(`cannot print safety rule: ${problem}`);
+  const prohibition = registry.prohibition(rule.prohibited)!.pattern;
+  return `THE ${rule.actor} SHALL NOT ${prohibition} WHILE ${conditionText(rule, registry)}.`;
 }

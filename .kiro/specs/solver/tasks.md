@@ -7,7 +7,7 @@ Run the tests after each task, fix failures, tick the box, and commit with `spec
   - Extend `test/fixtures/toy-vocab.ts` with a prohibition.
   - _Requirements: S6.4_
 
-- [ ] 1.2 Grammar: parse and print safety rules
+- [x] 1.2 Grammar: parse and print safety rules
   - `SafetyRule`, the `safety` sentence type, `parseSentence` for `THE <actor> SHALL NOT <prohibition> WHILE <condition>.` with the error cases, `printSafety`, and a validity check.
   - Property tests: print then parse returns an equal rule; arbitrary text never makes the parser throw.
   - _Requirements: S6.1, S6.2, S6.3_
